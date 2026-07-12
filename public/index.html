@@ -281,6 +281,7 @@
             <button type="button" class="active" data-mode="normal">Normal</button>
             <button type="button" data-mode="hard">Hard</button>
             <button type="button" data-mode="veryHard">Very hard</button>
+            <button type="button" data-mode="extreme">Extreme</button>
           </div>
           <button type="button" class="ghost" id="resetButton">Reset</button>
           <button type="button" class="primary" id="startButton">Start</button>
@@ -342,7 +343,7 @@
           </div>
           <div class="source-panel">
             <div class="source-line"><span>模式字库</span><strong id="sourceCount">1,000</strong></div>
-            <div class="source-line"><span>CSV 过滤</span><strong id="filterCount">0 excluded</strong></div>
+            <div class="source-line"><span>数据过滤</span><strong id="filterCount">2 excluded</strong></div>
             <div class="source-line"><span>OCR 汉字标签</span><strong>15,700 characters</strong></div>
             <div class="source-line"><span>检测器</span><strong id="recognizerStatus"><span class="status-dot"></span>Loading</strong></div>
           </div>
@@ -363,6 +364,7 @@
           <button type="button" class="difficulty-option active" data-start-mode="normal" role="radio" aria-checked="true"><span class="difficulty-name">Normal · Levels 1–4</span><span class="difficulty-count" data-start-count="normal">5 + 5 + 5 + boss · 0 characters</span></button>
           <button type="button" class="difficulty-option" data-start-mode="hard" role="radio" aria-checked="false"><span class="difficulty-name">Hard · Levels 2–5</span><span class="difficulty-count" data-start-count="hard">5 + 5 + 5 + boss · 0 characters</span></button>
           <button type="button" class="difficulty-option" data-start-mode="veryHard" role="radio" aria-checked="false"><span class="difficulty-name">Very hard · Levels 3–6</span><span class="difficulty-count" data-start-count="veryHard">5 + 5 + 5 + boss · 0 characters</span></button>
+          <button type="button" class="difficulty-option" data-start-mode="extreme" role="radio" aria-checked="false"><span class="difficulty-name">Extreme · Levels 4–7</span><span class="difficulty-count" data-start-count="extreme">5 + 5 + 5 + dictionary boss · 0 characters</span></button>
         </div>
         <div class="modal-actions"><button type="button" class="primary" id="launchStartButton" disabled>Loading recognizer…</button></div>
       </div>
@@ -383,20 +385,23 @@
     <script>
       const DATA = window.CHARACTER_DATA || { entries: [], meta: {} };
       const ALL_ENTRIES = DATA.entries || [];
+      const LEVEL7_ENTRIES = DATA.level7Entries || [];
       const META = DATA.meta || {};
       const MODE_CONFIGS = {
         normal: { label: "Normal", startLevel: 1 },
         hard: { label: "Hard", startLevel: 2 },
         veryHard: { label: "Very hard", startLevel: 3 },
+        extreme: { label: "Extreme", startLevel: 4 },
       };
       const LEVEL_DECKS = Object.fromEntries(
         Array.from({ length: 6 }, (_, index) => [index + 1, ALL_ENTRIES.filter((entry) => entry.level === index + 1)]),
       );
+      LEVEL_DECKS[7] = LEVEL7_ENTRIES;
       const DECKS = Object.fromEntries(Object.entries(MODE_CONFIGS).map(([mode, config]) => [
         mode,
-        Array.from({ length: 4 }, (_, offset) => LEVEL_DECKS[config.startLevel + offset] || []).flat(),
+        [...new Map(Array.from({ length: 4 }, (_, offset) => LEVEL_DECKS[config.startLevel + offset] || []).flat().map((entry) => [entry.hanzi, entry])).values()],
       ]));
-      const PLAYABLE_CHARACTERS = new Set(ALL_ENTRIES.map((entry) => entry.hanzi));
+      const PLAYABLE_CHARACTERS = new Set([...ALL_ENTRIES, ...LEVEL7_ENTRIES].map((entry) => entry.hanzi));
       const QUESTION_SECONDS = 60;
       const ACCEPTED_RANK = 5;
       const CAMPAIGN_QUESTIONS = 16;
@@ -427,17 +432,18 @@
       function deck() { return DECKS[state.filter] || []; }
       function modeCount(mode) { return (DECKS[mode] || []).length; }
       function modeConfig() { return MODE_CONFIGS[state.filter] || MODE_CONFIGS.normal; }
-      function questionLevel(questionIndex = state.answered) {
+      function questionLevel(questionIndex = state.correct) {
         const stageOffset = questionIndex < 5 ? 0 : questionIndex < 10 ? 1 : questionIndex < 15 ? 2 : 3;
         return modeConfig().startLevel + stageOffset;
       }
-      function isBossQuestion(questionIndex = state.answered) { return questionIndex === CAMPAIGN_QUESTIONS - 1; }
+      function isBossQuestion(questionIndex = state.correct) { return questionIndex === CAMPAIGN_QUESTIONS - 1; }
       function displayDefinition(value) { return value.replace(/\//g, " · "); }
-      function clueDefinition(value) {
-        return displayDefinition(value)
-          .replace(/[\p{Script=Han}]+(?:\|[\p{Script=Han}]+)?(?:\[[^\]]*\])?/gu, "[hidden character]")
-          .replace(/\s+/g, " ")
-          .trim();
+      function clueDefinition(value, entry) {
+        let clue = displayDefinition(value).replace(/\s+/g, " ").trim();
+        const redactions = new Set([entry.hanzi, ...String(entry.traditional || "")]);
+        redactions.delete("");
+        redactions.forEach((character) => { clue = clue.split(character).join("~"); });
+        return clue;
       }
 
       function setFeedback(message, mood = "") {
@@ -457,7 +463,8 @@
           button.disabled = modeCount(button.dataset.startMode) === 0;
         });
         els.startModeCounts.forEach((count) => {
-          count.textContent = `5 + 5 + 5 + boss · ${modeCount(count.dataset.startCount).toLocaleString("en-US")} characters`;
+          const bossLabel = count.dataset.startCount === "extreme" ? "dictionary boss" : "boss";
+          count.textContent = `5 + 5 + 5 + ${bossLabel} · ${modeCount(count.dataset.startCount).toLocaleString("en-US")} characters`;
         });
         els.launchStartButton.disabled = !state.recognizerReady || modeCount(state.filter) === 0;
         els.launchStartButton.textContent = state.recognizerReady ? "Start writing" : "Loading recognizer…";
@@ -762,9 +769,9 @@
         els.questionLabel.classList.toggle("boss", boss);
         els.questionLabel.textContent = boss
           ? `Final boss · Level ${entry.level} · 16/16`
-          : `${modeConfig().label} · Level ${entry.level} · ${state.answered + 1}/16`;
+          : `${modeConfig().label} · Level ${entry.level} · ${state.correct + 1}/16`;
         els.pinyinPrompt.textContent = entry.pinyin;
-        els.definitionPrompt.textContent = clueDefinition(entry.definition);
+        els.definitionPrompt.textContent = clueDefinition(entry.definition, entry);
       }
 
       function startGame() {
@@ -831,7 +838,7 @@
         state.recent = state.recent.slice(0, 5);
         render();
         if (state.lives <= 0) { setTimeout(endGame, 950); return; }
-        if (state.answered >= CAMPAIGN_QUESTIONS) { setTimeout(endGame, 950); return; }
+        if (state.correct >= CAMPAIGN_QUESTIONS) { setTimeout(endGame, 950); return; }
         setTimeout(() => { if (state.active) chooseQuestion(); }, 1450);
       }
 
@@ -840,7 +847,7 @@
         if (!state.active) return;
         clearInterval(state.timerId); state.active = false; state.resolving = false; setBestScore(state.score);
         drawing.setEnabled(false); els.skipButton.disabled = true; els.startButton.textContent = "Start";
-        const cleared = state.answered >= CAMPAIGN_QUESTIONS && state.lives > 0;
+        const cleared = state.correct >= CAMPAIGN_QUESTIONS && state.lives > 0;
         els.gameOverTitle.textContent = cleared ? "Campaign clear!" : "Run over";
         els.gameOverCopy.textContent = `${modeConfig().label} · Score: ${state.score} · Correct: ${state.correct}/${state.answered}`;
         els.gameOverOverlay.classList.add("show"); render();
@@ -862,7 +869,7 @@
         els.lives.textContent = "●".repeat(state.lives) || "0"; els.bestScore.textContent = getBestScore();
         els.sourceCount.textContent = modeCount(state.filter).toLocaleString("en-US");
         els.filterCount.textContent = `${META.rejectedRows || 0} excluded`;
-        els.route.style.setProperty("--train-x", `${Math.min(100, Math.round((state.answered / CAMPAIGN_QUESTIONS) * 100))}%`);
+        els.route.style.setProperty("--train-x", `${Math.min(100, Math.round((state.correct / CAMPAIGN_QUESTIONS) * 100))}%`);
         renderRecent(); syncDifficultyControls();
       }
 
