@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $PSScriptRoot
 $csvPath = Join-Path $root "characters.csv"
-$supportedPath = Join-Path $root "public\vendor\hanzi_lookup\supported_characters.txt"
+$supportedPath = Join-Path $root "public\vendor\paddleocr\supported_characters.txt"
 $outputPath = Join-Path $root "public\character_data.js"
 
 $supportedText = [System.IO.File]::ReadAllText($supportedPath, [System.Text.Encoding]::UTF8)
@@ -15,25 +15,33 @@ $rows = Import-Csv -LiteralPath $csvPath -Encoding utf8
 $seen = [System.Collections.Generic.HashSet[string]]::new()
 $rejected = [System.Collections.Generic.List[string]]::new()
 $entries = [System.Collections.Generic.List[object]]::new()
+$levelCutoffs = @(100, 300, 600, 1000, 2000)
 
-foreach ($row in $rows) {
+for ($rowIndex = 0; $rowIndex -lt $rows.Count; $rowIndex += 1) {
+  $row = $rows[$rowIndex]
   $hanzi = $row.hanzi_sc.Trim()
   if ($hanzi.Length -ne 1 -or -not $supported.Contains($hanzi) -or -not $seen.Add($hanzi)) {
     $rejected.Add($hanzi)
     continue
   }
 
-  $level = [int]$row.level
-  $band = if ($level -le 3) { "beginner" } elseif ($level -le 6) { "intermediate" } else { "advanced" }
+  $rank = $entries.Count + 1
+  $level = 6
+  for ($cutoffIndex = 0; $cutoffIndex -lt $levelCutoffs.Count; $cutoffIndex += 1) {
+    if ($rank -le $levelCutoffs[$cutoffIndex]) {
+      $level = $cutoffIndex + 1
+      break
+    }
+  }
   $entries.Add([ordered]@{
     hanzi = $hanzi
     traditional = $row.hanzi_trad.Trim()
     pinyin = $row.pinyin.Trim()
     pinyinNumbered = $row.pinyin_style2.Trim()
+    rank = $rank
     level = $level
-    levelLabel = $row.level_zh.Trim()
+    levelLabel = "Level $level"
     definition = $row.cc_cedict_definitions.Trim()
-    band = $band
   })
 }
 
@@ -43,7 +51,8 @@ $payload = [ordered]@{
     playableRows = $entries.Count
     rejectedRows = $rejected.Count
     recognizerVocabulary = $supported.Count
-    recognizer = "gugray/hanzi_lookup (Make Me a Hanzi model)"
+    recognizer = "PaddleOCR.js PP-OCRv5 mobile recognition"
+    levelCutoffs = $levelCutoffs
   }
   entries = $entries
 }

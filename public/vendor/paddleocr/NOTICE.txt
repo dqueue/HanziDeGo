@@ -1,0 +1,10 @@
+PaddleOCR PP-OCRv5 character vocabulary
+https://github.com/PaddlePaddle/PaddleOCR
+
+The supported-character list is derived from ppocr/utils/dict/ppocrv5_dict.txt.
+PaddleOCR and its model dictionary are distributed under the Apache License 2.0;
+see LICENSE-Apache-2.0.txt.
+
+Browser inference uses the official PP-OCRv5 mobile recognition ONNX model.
+The document text-region detection model is not used. ONNX Runtime Web 1.22.0
+executes the local model in the browser.

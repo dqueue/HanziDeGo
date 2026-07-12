@@ -1,34 +1,61 @@
 # Hanzi De Go
 
-A browser MVP for a simplified Chinese 成语 missing-character sprint.
+A browser-based simplified Chinese character writing sprint.
 
-Open `public/index.html` in a browser to play. The canonical question source is `public/chengyu_frequency.json`; `public/chengyu_frequency.js` exposes the same payload for direct browser loading.
+The game gives a pinyin and CC-CEDICT definition prompt. Any Han characters embedded in a definition or cross-reference are masked until the answer is resolved. Draw the matching character on the canvas, then press **Check writing**. The completed ink is normalized into an image and recognized by PP-OCRv5; stroke order and stroke direction are not passed to the model.
 
-The generated data comes from:
+Undo, redo, clear, OCR candidates, six frequency levels, three campaign modes, lives, streaks, scoring, 60-second questions, and local best scores are included. The five most recent results retain small in-memory thumbnails of the player's writing; they are never uploaded or persisted.
 
-- `THUOCL_chengyu.txt`: 清华大学开放中文词库成语词表, using the DF frequency value.
-- `idiom.json`: Chinese idiom metadata. Entries absent from THUOCL are included in the hardest band.
+## Run locally
 
-Run `scripts/build_chengyu_data.mjs` to regenerate `public/chengyu_frequency.json` and `public/chengyu_frequency.js`.
+Serve the `public` directory over HTTP so the model and WebAssembly runtime can load:
+
+```powershell
+python -m http.server 8000 --directory public
+```
+
+Then open `http://localhost:8000`.
+
+The 16 MB recognition model is stored locally in `public/vendor/paddleocr`. ONNX Runtime Web is loaded from jsDelivr.
+
+## Character data
+
+`characters.csv` is the source. Regenerate `public/character_data.js` with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build_character_data.ps1
+```
+
+The build intersects the CSV with `public/vendor/paddleocr/supported_characters.txt`, derived from PaddleOCR's official PP-OCRv5 dictionary. Characters absent from the model are excluded automatically.
 
 Current generated source:
 
-- 31,856 total entries
-- 常见: 2,130
-- 核心: 2,982
-- 冷门: 3,407
-- 最难: 23,337 dictionary-only entries
+- 2,791 unique simplified Chinese characters from `characters.csv`
+- 2,791 playable after OCR-model filtering
+- 0 excluded
+- Level 1 (ranks 1–100): 100
+- Level 2 (ranks 101–300): 200
+- Level 3 (ranks 301–600): 300
+- Level 4 (ranks 601–1,000): 400
+- Level 5 (ranks 1,001–2,000): 1,000
+- Level 6 (ranks 2,001+): 791
 
-Current MVP:
+Variant-only dictionary rows are omitted because masking their cross-reference would leave no usable writing clue.
 
-- 成语 prompts from the merged source list
-- One random character blanked per question
-- Chinese-character answer checking
-- Any source 成语 matching the visible pattern is accepted
-- All accepted possibilities are shown after each resolved question
-- Chinese definitions are shown after submitted guesses and resolved questions
-- Per-question timer
-- Multiple guesses per question
-- Lives are lost only on skip or timeout
-- Frequency/dictionary bands: 常见, 核心, 冷门, 最难
-- Lives, streaks, scoring, and best score in local storage
+## Campaign modes
+
+Every campaign contains 16 questions: five questions from each of its first three levels, followed by one final-boss question from the fourth level.
+
+- Normal: levels 1, 2, 3, then a level 4 boss
+- Hard: levels 2, 3, 4, then a level 5 boss
+- Very hard: levels 3, 4, 5, then a level 6 boss
+
+## Handwriting recognition
+
+The game uses the official PP-OCRv5 mobile recognition model from [`PaddlePaddle/PaddleOCR`](https://github.com/PaddlePaddle/PaddleOCR). Its dictionary contains 15,700 unique Han characters, including all 2,791 game characters.
+
+Only the recognition network is used. The document text-region detector is intentionally bypassed because it can reject sparse isolated characters such as 十. The final drawing is cropped, centered, resized to the model's `3 × 48 × 320` input, and evaluated locally in the browser with ONNX Runtime Web.
+
+The CTC output is constrained to exactly one playable Han character across the complete image. The row beneath the canvas contains ranked alternative single-character hypotheses, not a multi-character transcription. This prevents the decoder itself from splitting a left and right component into separate output characters, although a component-shaped character can still be an incorrect alternative from the underlying text-recognition model.
+
+Third-party notices and the Apache 2.0 license are in `public/vendor/paddleocr`.

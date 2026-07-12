@@ -3,110 +3,63 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Hanzi De Go</title>
+    <title>Hanzi De Go · 写字挑战</title>
     <style>
       :root {
         color-scheme: light;
         --ink: #17211f;
-        --muted: #63706c;
-        --paper: #f6f8f5;
-        --panel: #ffffff;
-        --line: #d8dfd8;
+        --muted: #66716e;
+        --paper: #f4f1e8;
+        --panel: #fffdf8;
+        --line: #d8d7cf;
         --jade: #087b6c;
         --jade-dark: #055f55;
-        --red: #c73838;
-        --gold: #e1b12c;
+        --red: #d9472f;
+        --gold: #e4b63e;
         --sky: #cfe7ee;
-        --track: #2f3534;
-        --shadow: 0 18px 50px rgba(23, 33, 31, 0.13);
-        font-family:
-          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        --shadow: 0 18px 48px rgba(23, 33, 31, 0.13);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
           "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
       }
 
-      * {
-        box-sizing: border-box;
-      }
-
+      * { box-sizing: border-box; }
       body {
         margin: 0;
         min-height: 100vh;
-        background:
-          linear-gradient(180deg, rgba(207, 231, 238, 0.9), rgba(246, 248, 245, 0.9) 42%),
-          var(--paper);
         color: var(--ink);
+        background:
+          radial-gradient(circle at 8% 0%, rgba(228, 182, 62, 0.16), transparent 28rem),
+          linear-gradient(180deg, rgba(207, 231, 238, 0.82), rgba(244, 241, 232, 0.92) 36rem),
+          var(--paper);
       }
-
-      button,
-      input {
-        font: inherit;
-      }
-
-      button {
-        border: 0;
-        cursor: pointer;
-      }
-
-      button:disabled {
-        cursor: not-allowed;
-        opacity: 0.55;
-      }
-
-      .app {
-        min-height: 100vh;
-        display: grid;
-        grid-template-rows: auto 1fr;
-      }
+      button { border: 0; cursor: pointer; font: inherit; }
+      button:disabled { cursor: not-allowed; opacity: 0.5; }
+      .app { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }
 
       .topbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 24px;
-        padding: 22px 32px 14px;
+        padding: 20px 32px 12px;
       }
-
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 0;
-      }
-
+      .brand { display: flex; align-items: center; gap: 12px; }
       .brand-mark {
-        width: 42px;
-        height: 42px;
+        width: 44px;
+        height: 44px;
         display: grid;
         place-items: center;
         background: var(--jade);
         color: #fff;
         border: 2px solid rgba(255, 255, 255, 0.8);
         box-shadow: 0 8px 22px rgba(8, 123, 108, 0.25);
-        font-size: 24px;
-        font-weight: 800;
+        font-family: "KaiTi", "STKaiti", serif;
+        font-size: 27px;
+        font-weight: 900;
       }
-
-      h1 {
-        margin: 0;
-        font-size: 28px;
-        line-height: 1;
-        letter-spacing: 0;
-      }
-
-      .subtitle {
-        margin-top: 5px;
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      .controls {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-      }
-
+      h1 { margin: 0; font-size: 27px; line-height: 1; }
+      .subtitle { margin-top: 5px; color: var(--muted); font-size: 13px; }
+      .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
       .segmented {
         display: grid;
         grid-auto-flow: column;
@@ -115,722 +68,201 @@
         background: rgba(255, 255, 255, 0.7);
         border: 1px solid var(--line);
       }
-
       .segmented button {
-        min-width: 58px;
+        min-width: 64px;
         height: 34px;
-        padding: 0 11px;
+        padding: 0 10px;
         background: transparent;
         color: var(--muted);
         border-radius: 4px;
-        font-weight: 800;
+        font-weight: 850;
       }
-
-      .segmented button.active {
-        background: var(--ink);
-        color: #fff;
-      }
-
-      .primary,
-      .secondary,
-      .ghost {
-        height: 42px;
+      .segmented button.active { background: var(--ink); color: #fff; }
+      .primary, .secondary, .ghost, .tool-button {
+        min-height: 42px;
         padding: 0 16px;
         border-radius: 6px;
-        font-weight: 800;
+        font-weight: 850;
       }
-
-      .primary {
-        background: var(--red);
-        color: #fff;
-        box-shadow: 0 10px 22px rgba(199, 56, 56, 0.22);
-      }
-
-      .secondary {
-        background: var(--jade);
-        color: #fff;
-      }
-
-      .ghost {
-        background: #fff;
-        color: var(--ink);
-        border: 1px solid var(--line);
-      }
+      .primary { background: var(--red); color: #fff; box-shadow: 0 10px 22px rgba(217, 71, 47, 0.2); }
+      .secondary { background: var(--jade); color: #fff; }
+      .ghost, .tool-button { background: #fff; color: var(--ink); border: 1px solid var(--line); }
 
       .game-shell {
-        width: min(1180px, 100%);
+        width: min(1220px, 100%);
         margin: 0 auto;
         padding: 14px 32px 34px;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 320px;
-        gap: 24px;
+        grid-template-columns: minmax(0, 1fr) 318px;
+        gap: 22px;
         align-items: start;
       }
-
       .route {
         grid-column: 1 / -1;
-        min-height: 132px;
+        min-height: 120px;
         position: relative;
         overflow: hidden;
-        background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0)),
-          var(--sky);
+        background: linear-gradient(180deg, rgba(255,255,255,.55), transparent), var(--sky);
         border: 1px solid #b7d2d9;
         box-shadow: var(--shadow);
       }
-
-      .route-sun {
+      .route::before {
+        content: "";
         position: absolute;
-        right: 42px;
-        top: 20px;
-        width: 52px;
-        height: 52px;
-        background: var(--gold);
-        border-radius: 50%;
-        box-shadow: 0 0 0 12px rgba(225, 177, 44, 0.18);
-      }
-
-      .mountains {
-        position: absolute;
-        inset: auto 0 34px;
-        height: 70px;
+        inset: auto 0 32px;
+        height: 65px;
+        opacity: .55;
         background:
-          linear-gradient(135deg, transparent 0 34%, rgba(8, 123, 108, 0.22) 34% 64%, transparent 64%) 0 0 / 180px 70px,
-          linear-gradient(225deg, transparent 0 38%, rgba(23, 33, 31, 0.14) 38% 68%, transparent 68%) 60px 8px / 210px 66px;
+          linear-gradient(135deg, transparent 0 34%, rgba(8,123,108,.28) 34% 64%, transparent 64%) 0 0 / 180px 70px,
+          linear-gradient(225deg, transparent 0 38%, rgba(23,33,31,.18) 38% 68%, transparent 68%) 60px 8px / 210px 66px;
       }
-
-      .track {
-        position: absolute;
-        left: 26px;
-        right: 26px;
-        bottom: 30px;
-        height: 10px;
-        background: repeating-linear-gradient(90deg, var(--track) 0 30px, #59615f 30px 36px);
-        border-radius: 999px;
+      .route-sun {
+        position: absolute; right: 42px; top: 18px; width: 44px; height: 44px;
+        background: var(--gold); border-radius: 50%; box-shadow: 0 0 0 11px rgba(228,182,62,.18);
       }
-
-      .track-fill {
-        position: absolute;
-        left: 26px;
-        bottom: 30px;
-        height: 10px;
-        width: var(--train-x, 0%);
-        max-width: calc(100% - 52px);
-        background: var(--gold);
-        border-radius: 999px;
-        transition: width 280ms ease;
+      .track, .track-fill {
+        position: absolute; left: 26px; bottom: 27px; height: 9px; border-radius: 999px;
       }
-
+      .track { right: 26px; background: repeating-linear-gradient(90deg, #303735 0 30px, #68706e 30px 36px); }
+      .track-fill { width: var(--train-x, 0%); max-width: calc(100% - 52px); background: var(--gold); transition: width 280ms ease; }
       .train {
         position: absolute;
-        left: clamp(70px, calc(26px + var(--train-x, 0%)), calc(100% - 70px));
-        bottom: 45px;
-        width: 136px;
+        left: clamp(68px, calc(26px + var(--train-x, 0%)), calc(100% - 68px));
+        bottom: 40px;
+        width: 132px;
         height: 42px;
         transform: translateX(-50%);
         transition: left 280ms ease;
       }
+      .train-body { position: absolute; inset: 7px 0; background: #fff; border: 3px solid var(--ink); border-radius: 22px 8px 8px 22px; overflow: hidden; }
+      .train-body::before { content: ""; position: absolute; inset: 18px 0 0; background: var(--red); }
+      .train-body::after { content: "写"; position: absolute; left: 20px; top: 0; color: var(--jade); font-weight: 950; font-size: 16px; }
+      .wheel { position: absolute; bottom: 0; width: 17px; height: 17px; border: 4px solid var(--ink); border-radius: 50%; background: #fff; }
+      .wheel.one { left: 27px; } .wheel.two { right: 23px; }
+      .station-labels { position: absolute; left: 26px; right: 26px; bottom: 4px; display: grid; grid-template-columns: repeat(5, 1fr); font-size: 11px; font-weight: 850; }
+      .station-labels span:last-child { text-align: right; }
 
-      .train-body {
-        position: absolute;
-        inset: 7px 0;
-        background: var(--panel);
-        border: 3px solid var(--ink);
-        border-radius: 22px 8px 8px 22px;
-        overflow: hidden;
-      }
-
-      .train-body::before {
-        content: "";
-        position: absolute;
-        inset: 18px 0 0;
-        background: var(--red);
-      }
-
-      .train-body::after {
-        content: "";
-        position: absolute;
-        left: 24px;
-        top: 6px;
-        width: 72px;
-        height: 10px;
-        background: linear-gradient(90deg, var(--jade) 0 18px, transparent 18px 25px, var(--jade) 25px 43px, transparent 43px 50px, var(--jade) 50px);
-      }
-
-      .wheel {
-        position: absolute;
-        bottom: 1px;
-        width: 15px;
-        height: 15px;
-        background: var(--ink);
-        border: 3px solid #fff;
-        border-radius: 50%;
-      }
-
-      .wheel.one {
-        left: 28px;
-      }
-
-      .wheel.two {
-        right: 26px;
-      }
-
-      .station-labels {
-        position: absolute;
-        left: 26px;
-        right: 26px;
-        bottom: 6px;
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        color: var(--ink);
-        font-size: 12px;
-        font-weight: 800;
-      }
-
-      .station-labels span::before {
-        content: "";
-        display: block;
-        width: 11px;
-        height: 11px;
-        margin-bottom: 2px;
-        background: #fff;
-        border: 3px solid var(--ink);
-        border-radius: 50%;
-      }
-
-      .stage,
-      .side {
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid var(--line);
-        box-shadow: var(--shadow);
-      }
-
-      .stage {
-        min-height: 550px;
-        display: grid;
-        grid-template-rows: auto 1fr auto;
-      }
-
-      .question-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        padding: 18px 20px;
-        border-bottom: 1px solid var(--line);
-      }
-
+      .stage, .side { background: rgba(255, 253, 248, 0.95); border: 1px solid var(--line); box-shadow: var(--shadow); }
+      .stage { min-height: 670px; display: grid; grid-template-rows: auto auto 1fr auto; }
+      .question-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
       .pill {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 112px;
-        height: 32px;
-        padding: 0 12px;
-        background: #eaf5f2;
-        color: var(--jade-dark);
-        border: 1px solid #b9dbd3;
-        font-size: 12px;
-        font-weight: 900;
-        text-transform: uppercase;
+        display: inline-flex; align-items: center; justify-content: center; min-width: 120px; height: 32px; padding: 0 12px;
+        background: #eaf5f2; color: var(--jade-dark); border: 1px solid #b9dbd3; font-size: 12px; font-weight: 900; text-transform: uppercase;
       }
+      .pill.boss { background: #fff0ed; color: var(--red); border-color: #e8a99d; box-shadow: 0 0 0 3px rgba(217,71,47,.1); }
+      .timer { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 76px; height: 38px; padding: 0 12px; background: var(--ink); color: #fff; font-weight: 900; font-size: 18px; }
+      .timer::before { content: "◷"; font-size: 15px; color: var(--gold); }
 
-      .timer {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 74px;
-        height: 38px;
-        background: var(--ink);
-        color: #fff;
-        font-weight: 900;
-        font-size: 18px;
-      }
+      .prompt-card { padding: 22px 24px 18px; display: grid; gap: 8px; text-align: center; border-bottom: 1px solid var(--line); }
+      .prompt-eyebrow { color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+      .pinyin { min-height: 44px; color: var(--red); font-family: Georgia, "Times New Roman", serif; font-size: clamp(31px, 4vw, 45px); font-weight: 850; line-height: 1; }
+      .definition { min-height: 46px; max-width: 660px; margin: 0 auto; color: var(--ink); font-size: 17px; line-height: 1.45; font-weight: 650; text-wrap: balance; }
 
-      .prompt-zone {
-        display: grid;
-        place-items: center;
-        padding: 34px 26px 22px;
-      }
-
-      .chengyu-card {
-        width: min(560px, 100%);
-        min-height: 250px;
-        display: grid;
-        place-items: center;
-        padding: 28px;
+      .writing-zone { display: grid; grid-template-columns: auto minmax(130px, 1fr); gap: 16px; justify-content: center; align-items: stretch; padding: 18px; }
+      .board-wrap { position: relative; width: min(480px, 62vw); aspect-ratio: 1.18; min-height: 330px; }
+      .writing-board {
+        width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none;
         background:
-          linear-gradient(90deg, rgba(199, 56, 56, 0.08) 1px, transparent 1px),
-          linear-gradient(0deg, rgba(199, 56, 56, 0.08) 1px, transparent 1px),
+          linear-gradient(90deg, transparent calc(50% - 1px), rgba(217,71,47,.25) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+          linear-gradient(0deg, transparent calc(50% - 1px), rgba(217,71,47,.25) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+          linear-gradient(45deg, transparent calc(50% - 1px), rgba(217,71,47,.13) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+          linear-gradient(-45deg, transparent calc(50% - 1px), rgba(217,71,47,.13) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
           #fff;
-        background-size: 34px 34px;
         border: 4px solid var(--ink);
-        box-shadow: 12px 12px 0 rgba(8, 123, 108, 0.16);
+        box-shadow: 9px 9px 0 rgba(8,123,108,.15);
       }
+      .board-loading { position: absolute; inset: 4px; display: none; place-items: center; background: rgba(255,255,255,.86); color: var(--muted); font-weight: 850; }
+      .board-wrap.loading .board-loading { display: grid; }
+      .tool-rail { display: grid; align-content: start; gap: 9px; }
+      .tool-button { min-width: 118px; display: flex; align-items: center; gap: 8px; justify-content: flex-start; }
+      .tool-icon { width: 24px; font-size: 20px; line-height: 1; text-align: center; }
+      .tool-hint { margin-top: auto; padding: 12px; color: var(--muted); border: 1px dashed var(--line); font-size: 12px; line-height: 1.45; }
 
-      .chengyu-text {
-        display: grid;
-        grid-template-columns: repeat(var(--chengyu-columns, 4), minmax(54px, 88px));
-        gap: 12px;
-        align-items: center;
-        justify-content: center;
-        color: var(--ink);
-        font-family: "Noto Serif SC", "SimSun", "Microsoft YaHei UI", "Microsoft YaHei", serif;
-        font-size: 70px;
-        line-height: 1;
-        font-weight: 900;
-        letter-spacing: 0;
+      .answer-panel { display: grid; gap: 11px; padding: 0 18px 18px; }
+      .recognition { min-height: 61px; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 9px 12px; background: #fff; border: 1px solid var(--line); }
+      .recognition-label { color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+      .candidates { display: flex; gap: 7px; align-items: center; overflow-x: auto; min-height: 42px; }
+      .candidate { position: relative; flex: 0 0 44px; height: 40px; display: grid; place-items: center; border: 1px solid var(--line); background: #faf9f5; font-family: "KaiTi", "STKaiti", serif; font-size: 28px; font-weight: 900; }
+      .candidate::before { content: attr(data-rank); position: absolute; top: 2px; left: 4px; color: #77807d; font-family: system-ui, sans-serif; font-size: 9px; font-weight: 800; line-height: 1; }
+      .candidate:first-child { border-color: var(--jade); background: #eaf5f2; }
+      .candidate-placeholder { color: #a7aeab; font-size: 13px; font-weight: 700; }
+      .answer-actions { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+      .feedback { min-height: 44px; padding: 11px 13px; border: 1px solid var(--line); background: #fff; color: var(--muted); font-weight: 700; line-height: 1.4; }
+      .feedback.good { border-color: #8ed0c4; background: #ecf8f5; color: var(--jade-dark); }
+      .feedback.warn { border-color: #ead083; background: #fff8df; color: #756018; }
+      .feedback.bad { border-color: #e4a4a4; background: #fff0f0; color: #8f2828; }
+
+      .side { display: grid; gap: 1px; overflow: hidden; }
+      .score-grid { display: grid; grid-template-columns: repeat(2, 1fr); background: var(--line); gap: 1px; }
+      .metric { min-height: 90px; padding: 14px; background: #fff; }
+      .metric-label { color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+      .metric-value { margin-top: 8px; font-size: 31px; line-height: 1; font-weight: 950; }
+      .metric-value.small { font-size: 22px; }
+      .source-panel, .list-panel { padding: 17px; background: #fff; }
+      .source-line { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid #eef1ef; color: var(--muted); font-size: 12px; font-weight: 800; }
+      .source-line:last-child { border-bottom: 0; }
+      .source-line strong { color: var(--ink); text-align: right; }
+      .status-dot { display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 50%; background: var(--gold); }
+      .status-dot.ready { background: var(--jade); }
+      .status-dot.error { background: var(--red); }
+      .list-title { margin: 0 0 10px; color: var(--muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+      .recent { display: grid; gap: 7px; min-height: 170px; }
+      .recent-row { display: grid; grid-template-columns: 50px 40px minmax(0,1fr) auto; align-items: center; gap: 7px; padding: 8px 0; border-bottom: 1px solid #eef1ef; }
+      .recent-writing { width: 48px; height: 48px; display: grid; place-items: center; overflow: hidden; background: #fffdf8; border: 1px solid var(--line); color: #a7aeab; font-size: 16px; }
+      .recent-writing img { width: 100%; height: 100%; display: block; object-fit: cover; }
+      .recent-hanzi { width: 38px; height: 38px; display: grid; place-items: center; background: #f5f3ec; font-family: "KaiTi", "STKaiti", serif; font-size: 27px; font-weight: 900; }
+      .recent-main { min-width: 0; }
+      .recent-answer { font-size: 13px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .recent-meta { color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .recent-mark { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; color: #fff; font-weight: 950; }
+      .recent-mark.ok { background: var(--jade); } .recent-mark.no { background: var(--red); }
+      .empty-recent { display: grid; place-items: center; min-height: 145px; color: var(--muted); border: 1px dashed var(--line); font-size: 13px; font-weight: 750; }
+
+      .overlays { position: fixed; inset: 0; display: none; place-items: center; padding: 22px; background: rgba(23,33,31,.54); z-index: 20; }
+      .overlays.show { display: grid; }
+      .launch-overlay { background: rgba(244,241,232,.93); }
+      .modal { width: calc(100vw - 44px); max-width: 460px; padding: 24px; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+      .launch-modal { max-width: 620px; }
+      .launch-kicker { margin: 0 0 7px; color: var(--jade-dark); font-size: 11px; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
+      .modal h2 { margin: 0 0 10px; font-size: 28px; }
+      .modal p { margin: 0 0 17px; color: var(--muted); line-height: 1.5; }
+      .difficulty-options { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin: 18px 0 20px; }
+      .difficulty-option { min-height: 84px; display: grid; gap: 5px; justify-items: start; padding: 13px; color: var(--ink); background: #fff; border: 2px solid var(--line); border-radius: 6px; text-align: left; }
+      .difficulty-option.active { border-color: var(--jade); box-shadow: 0 0 0 4px rgba(8,123,108,.13); }
+      .difficulty-name { font-size: 17px; font-weight: 950; }
+      .difficulty-count { color: var(--muted); font-size: 11px; font-weight: 800; }
+      .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+      @media (max-width: 940px) {
+        .topbar { align-items: flex-start; flex-direction: column; padding: 18px 18px 9px; }
+        .controls { width: 100%; justify-content: flex-start; }
+        .game-shell { grid-template-columns: 1fr; padding: 10px 18px 24px; }
+        .side { order: 3; }
       }
-
-      .chengyu-char {
-        aspect-ratio: 1;
-        display: grid;
-        place-items: center;
-        border: 2px solid rgba(23, 33, 31, 0.18);
-        background: rgba(255, 255, 255, 0.82);
-      }
-
-      .chengyu-char.blank {
-        color: var(--red);
-        border-color: var(--red);
-        background: #fff4f4;
-      }
-
-      .answer-panel {
-        display: grid;
-        gap: 14px;
-        padding: 20px;
-        border-top: 1px solid var(--line);
-      }
-
-      .answer-row {
-        display: grid;
-        grid-template-columns: 1fr auto auto;
-        gap: 10px;
-      }
-
-      .answer-input {
-        width: 100%;
-        height: 52px;
-        padding: 0 16px;
-        border: 2px solid var(--ink);
-        background: #fff;
-        color: var(--ink);
-        border-radius: 6px;
-        font-family: "Noto Serif SC", "SimSun", "Microsoft YaHei UI", "Microsoft YaHei", serif;
-        font-size: 26px;
-        font-weight: 900;
-        outline: none;
-      }
-
-      .answer-input:focus {
-        border-color: var(--jade);
-        box-shadow: 0 0 0 4px rgba(8, 123, 108, 0.15);
-      }
-
-      .feedback {
-        min-height: 70px;
-        max-height: 182px;
-        overflow: auto;
-        padding: 12px 14px;
-        border: 1px solid var(--line);
-        background: #fff;
-        color: var(--muted);
-        font-weight: 700;
-      }
-
-      .feedback.good {
-        border-color: #8ed0c4;
-        background: #ecf8f5;
-        color: var(--jade-dark);
-      }
-
-      .feedback.warn {
-        border-color: #ead083;
-        background: #fff8df;
-        color: #756018;
-      }
-
-      .feedback.bad {
-        border-color: #e4a4a4;
-        background: #fff0f0;
-        color: #8f2828;
-      }
-
-      .accepted-title {
-        margin-bottom: 8px;
-        font-size: 13px;
-        font-weight: 950;
-        text-transform: uppercase;
-      }
-
-      .answers-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-
-      .answer-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 5px 8px;
-        background: rgba(255, 255, 255, 0.84);
-        border: 1px solid rgba(23, 33, 31, 0.16);
-        color: var(--ink);
-        font-size: 14px;
-        font-weight: 900;
-        white-space: nowrap;
-      }
-
-      .answer-chip small {
-        color: var(--muted);
-        font-size: 11px;
-        font-weight: 800;
-      }
-
-      .definition-list {
-        display: grid;
-        gap: 8px;
-        margin-top: 10px;
-      }
-
-      .definition-item {
-        display: grid;
-        gap: 3px;
-        padding-top: 8px;
-        border-top: 1px solid rgba(23, 33, 31, 0.12);
-        color: var(--ink);
-        font-size: 14px;
-        line-height: 1.45;
-      }
-
-      .definition-item strong {
-        font-weight: 950;
-      }
-
-      .definition-item span {
-        color: var(--muted);
-      }
-
-      .side {
-        display: grid;
-        gap: 1px;
-        overflow: hidden;
-      }
-
-      .score-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        background: var(--line);
-        gap: 1px;
-      }
-
-      .metric {
-        min-height: 92px;
-        padding: 14px;
-        background: #fff;
-      }
-
-      .metric-label {
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 900;
-        text-transform: uppercase;
-      }
-
-      .metric-value {
-        margin-top: 8px;
-        font-size: 31px;
-        line-height: 1;
-        font-weight: 950;
-      }
-
-      .metric-value.small {
-        font-size: 23px;
-      }
-
-      .source-panel,
-      .list-panel {
-        padding: 18px;
-        background: #fff;
-      }
-
-      .source-line {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 7px 0;
-        border-bottom: 1px solid #eef1ef;
-        color: var(--muted);
-        font-size: 13px;
-        font-weight: 800;
-      }
-
-      .source-line:last-child {
-        border-bottom: 0;
-      }
-
-      .source-line strong {
-        color: var(--ink);
-      }
-
-      .list-title {
-        margin: 0 0 12px;
-        font-size: 14px;
-        text-transform: uppercase;
-        font-weight: 950;
-        color: var(--muted);
-      }
-
-      .recent {
-        display: grid;
-        gap: 8px;
-        min-height: 178px;
-      }
-
-      .recent-row {
-        display: grid;
-        grid-template-columns: 82px 1fr auto;
-        align-items: center;
-        gap: 10px;
-        padding: 9px 0;
-        border-bottom: 1px solid #eef1ef;
-      }
-
-      .recent-row:last-child {
-        border-bottom: 0;
-      }
-
-      .recent-pattern {
-        font-family: "Noto Serif SC", "SimSun", "Microsoft YaHei UI", "Microsoft YaHei", serif;
-        font-size: 22px;
-        font-weight: 900;
-        white-space: nowrap;
-      }
-
-      .recent-main {
-        min-width: 0;
-      }
-
-      .recent-answer {
-        font-size: 13px;
-        font-weight: 900;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .recent-meta {
-        color: var(--muted);
-        font-size: 12px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .recent-mark {
-        width: 28px;
-        height: 28px;
-        display: grid;
-        place-items: center;
-        color: #fff;
-        font-weight: 950;
-        border-radius: 50%;
-      }
-
-      .recent-mark.ok {
-        background: var(--jade);
-      }
-
-      .recent-mark.no {
-        background: var(--red);
-      }
-
-      .empty-recent {
-        display: grid;
-        place-items: center;
-        min-height: 150px;
-        color: var(--muted);
-        border: 1px dashed var(--line);
-        font-weight: 800;
-      }
-
-      .overlays {
-        position: fixed;
-        inset: 0;
-        display: none;
-        place-items: center;
-        padding: 22px;
-        background: rgba(23, 33, 31, 0.52);
-        z-index: 20;
-      }
-
-      .overlays.show {
-        display: grid;
-      }
-
-      .modal {
-        width: min(440px, 100%);
-        background: #fff;
-        border: 1px solid var(--line);
-        box-shadow: var(--shadow);
-        border-radius: 8px;
-        padding: 24px;
-      }
-
-      .modal h2 {
-        margin: 0 0 12px;
-        font-size: 28px;
-      }
-
-      .modal p {
-        margin: 0 0 18px;
-        color: var(--muted);
-        line-height: 1.5;
-      }
-
-      .launch-overlay {
-        background: rgba(246, 248, 245, 0.9);
-      }
-
-      .launch-modal {
-        width: min(580px, 100%);
-      }
-
-      .launch-kicker {
-        margin: 0 0 8px;
-        color: var(--jade-dark);
-        font-size: 12px;
-        font-weight: 950;
-        text-transform: uppercase;
-      }
-
-      .difficulty-options {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        margin: 18px 0 20px;
-      }
-
-      .difficulty-option {
-        min-height: 86px;
-        display: grid;
-        gap: 6px;
-        justify-items: start;
-        padding: 14px;
-        background: #fff;
-        color: var(--ink);
-        border: 2px solid var(--line);
-        border-radius: 6px;
-        text-align: left;
-      }
-
-      .difficulty-option.active {
-        border-color: var(--jade);
-        box-shadow: 0 0 0 4px rgba(8, 123, 108, 0.14);
-      }
-
-      .difficulty-name {
-        font-size: 18px;
-        font-weight: 950;
-      }
-
-      .difficulty-count {
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 850;
-      }
-
-      .modal-actions {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-      }
-
-      @media (max-width: 880px) {
-        .topbar {
-          align-items: flex-start;
-          flex-direction: column;
-          padding: 18px 18px 10px;
-        }
-
-        .controls {
-          justify-content: flex-start;
-          width: 100%;
-        }
-
-        .game-shell {
-          grid-template-columns: 1fr;
-          padding: 10px 18px 24px;
-        }
-
-        .side {
-          order: 3;
-        }
-      }
-
-      @media (max-width: 620px) {
-        h1 {
-          font-size: 24px;
-        }
-
-        .brand-mark {
-          width: 38px;
-          height: 38px;
-          font-size: 21px;
-        }
-
-        .route {
-          min-height: 112px;
-        }
-
-        .train {
-          width: 112px;
-        }
-
-        .station-labels {
-          font-size: 10px;
-        }
-
-        .question-head,
-        .answer-panel {
-          padding: 14px;
-        }
-
-        .prompt-zone {
-          padding: 24px 16px 18px;
-        }
-
-        .chengyu-card {
-          min-height: 208px;
-          padding: 18px;
-        }
-
-        .chengyu-text {
-          grid-template-columns: repeat(var(--chengyu-columns, 4), minmax(42px, 66px));
-          gap: 8px;
-          font-size: 48px;
-        }
-
-        .answer-row {
-          grid-template-columns: 1fr;
-        }
-
-        .answer-input,
-        .primary,
-        .secondary,
-        .ghost {
-          width: 100%;
-        }
-
-        .score-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-
-        .difficulty-options {
-          grid-template-columns: 1fr;
-        }
+      @media (max-width: 640px) {
+        body { overflow-x: hidden; }
+        .topbar, .game-shell { width: 100%; min-width: 0; }
+        .controls, .segmented, .stage, .route, .side { min-width: 0; max-width: 100%; }
+        .stage > * { width: 100%; min-width: 0; }
+        h1 { font-size: 23px; }
+        .segmented { width: 100%; grid-auto-flow: row; grid-template-columns: repeat(2, 1fr); }
+        .segmented button { min-width: 0; }
+        .route { min-height: 106px; }
+        .train { width: 108px; }
+        .stage { min-height: 0; }
+        .prompt-card { padding: 18px 15px 14px; }
+        .definition { font-size: 15px; }
+        .writing-zone { grid-template-columns: 1fr; padding: 14px; }
+        .board-wrap { width: 100%; min-height: 300px; }
+        .tool-rail { grid-template-columns: repeat(3, 1fr); }
+        .tool-button { min-width: 0; justify-content: center; padding: 0 4px; gap: 2px; font-size: 12px; }
+        .tool-icon { display: none; }
+        .tool-hint { display: none; }
+        .answer-panel { padding: 0 14px 14px; }
+        .recognition { grid-template-columns: 1fr; gap: 3px; }
+        .answer-actions { grid-template-columns: 1fr; }
+        .answer-actions button { width: 100%; }
+        .difficulty-options { grid-template-columns: 1fr; }
       }
     </style>
   </head>
@@ -838,19 +270,17 @@
     <main class="app">
       <header class="topbar">
         <div class="brand" aria-label="Hanzi De Go">
-          <div class="brand-mark">成</div>
+          <div class="brand-mark">字</div>
           <div>
             <h1>Hanzi De Go</h1>
-            <div class="subtitle">成语缺字快答</div>
+            <div class="subtitle">看提示，亲手写 · Character writing sprint</div>
           </div>
         </div>
         <div class="controls">
-          <div class="segmented" aria-label="题库">
-            <button type="button" class="active" data-band="all">全部</button>
-            <button type="button" data-band="common">常见</button>
-            <button type="button" data-band="core">核心</button>
-            <button type="button" data-band="rare">冷门</button>
-            <button type="button" data-band="hardest">最难</button>
+          <div class="segmented" aria-label="Game mode">
+            <button type="button" class="active" data-mode="normal">Normal</button>
+            <button type="button" data-mode="hard">Hard</button>
+            <button type="button" data-mode="veryHard">Very hard</button>
           </div>
           <button type="button" class="ghost" id="resetButton">Reset</button>
           <button type="button" class="primary" id="startButton">Start</button>
@@ -860,90 +290,65 @@
       <section class="game-shell">
         <div class="route" id="route" style="--train-x: 0%">
           <div class="route-sun" aria-hidden="true"></div>
-          <div class="mountains" aria-hidden="true"></div>
           <div class="track-fill" aria-hidden="true"></div>
           <div class="track" aria-hidden="true"></div>
           <div class="train" aria-hidden="true">
-            <div class="train-body"></div>
-            <div class="wheel one"></div>
-            <div class="wheel two"></div>
+            <div class="train-body"></div><div class="wheel one"></div><div class="wheel two"></div>
           </div>
-          <div class="station-labels" aria-hidden="true">
-            <span>起点</span>
-            <span>常见</span>
-            <span>核心</span>
-            <span>冷门</span>
-            <span>最难</span>
-            <span>终点</span>
-          </div>
+          <div class="station-labels" aria-hidden="true"><span>起点</span><span>5</span><span>10</span><span>15</span><span>终点</span></div>
         </div>
 
         <section class="stage" aria-labelledby="questionLabel">
           <div class="question-head">
-            <span class="pill" id="questionLabel">成语</span>
-            <div class="timer" id="timer">20</div>
+            <span class="pill" id="questionLabel">准备中</span>
+            <div class="timer" id="timer">60</div>
           </div>
-          <div class="prompt-zone">
-            <div class="chengyu-card" aria-live="polite">
-              <div class="chengyu-text" id="chengyuText">
-                <span class="chengyu-char">准</span>
-                <span class="chengyu-char">备</span>
-                <span class="chengyu-char blank">□</span>
-                <span class="chengyu-char">车</span>
-              </div>
+          <div class="prompt-card">
+            <div class="prompt-eyebrow">Write the character</div>
+            <div class="pinyin" id="pinyinPrompt">pīnyīn</div>
+            <div class="definition" id="definitionPrompt">Read the clue, then write one simplified Chinese character.</div>
+          </div>
+          <div class="writing-zone">
+            <div class="board-wrap loading" id="boardWrap">
+              <canvas class="writing-board" id="writingBoard" aria-label="Handwriting input area"></canvas>
+              <div class="board-loading" id="boardLoading">Loading final-image handwriting OCR…</div>
+            </div>
+            <div class="tool-rail" aria-label="Drawing controls">
+              <button type="button" class="tool-button" id="undoButton" disabled><span class="tool-icon">↶</span>Undo</button>
+              <button type="button" class="tool-button" id="redoButton" disabled><span class="tool-icon">↷</span>Redo</button>
+              <button type="button" class="tool-button" id="clearButton" disabled><span class="tool-icon">✣</span>Clear</button>
+              <div class="tool-hint">Write naturally. Stroke order does not matter—the OCR only sees the finished ink.</div>
             </div>
           </div>
-          <form class="answer-panel" id="answerForm">
-            <div class="answer-row">
-              <input
-                class="answer-input"
-                id="answerInput"
-                name="answer"
-                type="text"
-                autocomplete="off"
-                autocapitalize="none"
-                spellcheck="false"
-                inputmode="text"
-                maxlength="16"
-                placeholder="填一个汉字"
-                disabled
-              />
-              <button type="submit" class="secondary" id="submitButton" disabled>Go</button>
+          <div class="answer-panel">
+            <div class="recognition" aria-live="polite">
+              <div class="recognition-label">Whole-character alternatives · best first</div>
+              <div class="candidates" id="candidates"><span class="candidate-placeholder">Finish the character, then press Check writing.</span></div>
+            </div>
+            <div class="answer-actions">
+              <button type="button" class="secondary" id="checkButton" disabled>Check writing</button>
               <button type="button" class="ghost" id="skipButton" disabled>Skip</button>
             </div>
-            <div class="feedback" id="feedback" aria-live="polite">准备发车</div>
-          </form>
+            <div class="feedback" id="feedback" aria-live="polite">正在准备识别器…</div>
+          </div>
         </section>
 
         <aside class="side" aria-label="Game status">
           <div class="score-grid">
-            <div class="metric">
-              <div class="metric-label">Score</div>
-              <div class="metric-value" id="score">0</div>
-            </div>
-            <div class="metric">
-              <div class="metric-label">Streak</div>
-              <div class="metric-value" id="streak">0</div>
-            </div>
-            <div class="metric">
-              <div class="metric-label">Lives</div>
-              <div class="metric-value small" id="lives">3</div>
-            </div>
-            <div class="metric">
-              <div class="metric-label">Best</div>
-              <div class="metric-value small" id="bestScore">0</div>
-            </div>
+            <div class="metric"><div class="metric-label">Score</div><div class="metric-value" id="score">0</div></div>
+            <div class="metric"><div class="metric-label">Streak</div><div class="metric-value" id="streak">0</div></div>
+            <div class="metric"><div class="metric-label">Lives</div><div class="metric-value small" id="lives">●●●●●</div></div>
+            <div class="metric"><div class="metric-label">Best</div><div class="metric-value small" id="bestScore">0</div></div>
           </div>
           <div class="source-panel">
-            <div class="source-line"><span>题库</span><strong id="sourceCount">0</strong></div>
-            <div class="source-line"><span>来源</span><strong>THUOCL + 词典</strong></div>
-            <div class="source-line"><span>匹配</span><strong id="matchCount">0</strong></div>
+            <div class="source-line"><span>模式字库</span><strong id="sourceCount">1,000</strong></div>
+            <div class="source-line"><span>CSV 过滤</span><strong id="filterCount">0 excluded</strong></div>
+            <div class="source-line"><span>OCR 汉字标签</span><strong>15,700 characters</strong></div>
+            <div class="source-line"><span>检测器</span><strong id="recognizerStatus"><span class="status-dot"></span>Loading</strong></div>
           </div>
           <div class="list-panel">
             <h2 class="list-title">最近题目</h2>
-            <div class="recent" id="recentList">
-              <div class="empty-recent">暂无记录</div>
-            </div>
+            <div class="recent" id="recentList"><div class="empty-recent">答题后会显示答案</div></div>
           </div>
         </aside>
       </section>
@@ -951,34 +356,15 @@
 
     <div class="overlays launch-overlay show" id="difficultyOverlay" role="dialog" aria-modal="true" aria-labelledby="difficultyTitle">
       <div class="modal launch-modal">
-        <div class="launch-kicker">New run</div>
-        <h2 id="difficultyTitle">Choose difficulty</h2>
-        <p id="difficultyStatus">Select a word pool before the first question.</p>
-        <div class="difficulty-options" role="radiogroup" aria-label="Difficulty">
-          <button type="button" class="difficulty-option active" data-start-band="all" role="radio" aria-checked="true">
-            <span class="difficulty-name">All</span>
-            <span class="difficulty-count" data-start-count="all">0 words</span>
-          </button>
-          <button type="button" class="difficulty-option" data-start-band="common" role="radio" aria-checked="false">
-            <span class="difficulty-name">Common</span>
-            <span class="difficulty-count" data-start-count="common">0 words</span>
-          </button>
-          <button type="button" class="difficulty-option" data-start-band="core" role="radio" aria-checked="false">
-            <span class="difficulty-name">Core</span>
-            <span class="difficulty-count" data-start-count="core">0 words</span>
-          </button>
-          <button type="button" class="difficulty-option" data-start-band="rare" role="radio" aria-checked="false">
-            <span class="difficulty-name">Rare</span>
-            <span class="difficulty-count" data-start-count="rare">0 words</span>
-          </button>
-          <button type="button" class="difficulty-option" data-start-band="hardest" role="radio" aria-checked="false">
-            <span class="difficulty-name">Hardest</span>
-            <span class="difficulty-count" data-start-count="hardest">0 words</span>
-          </button>
+        <div class="launch-kicker">New writing run</div>
+        <h2 id="difficultyTitle">Choose a mode</h2>
+        <p id="difficultyStatus">The final-image handwriting OCR is loading its 16 MB local model.</p>
+        <div class="difficulty-options" role="radiogroup" aria-label="Game mode">
+          <button type="button" class="difficulty-option active" data-start-mode="normal" role="radio" aria-checked="true"><span class="difficulty-name">Normal · Levels 1–4</span><span class="difficulty-count" data-start-count="normal">5 + 5 + 5 + boss · 0 characters</span></button>
+          <button type="button" class="difficulty-option" data-start-mode="hard" role="radio" aria-checked="false"><span class="difficulty-name">Hard · Levels 2–5</span><span class="difficulty-count" data-start-count="hard">5 + 5 + 5 + boss · 0 characters</span></button>
+          <button type="button" class="difficulty-option" data-start-mode="veryHard" role="radio" aria-checked="false"><span class="difficulty-name">Very hard · Levels 3–6</span><span class="difficulty-count" data-start-count="veryHard">5 + 5 + 5 + boss · 0 characters</span></button>
         </div>
-        <div class="modal-actions">
-          <button type="button" class="primary" id="launchStartButton">Start game</button>
-        </div>
+        <div class="modal-actions"><button type="button" class="primary" id="launchStartButton" disabled>Loading recognizer…</button></div>
       </div>
     </div>
 
@@ -993,541 +379,516 @@
       </div>
     </div>
 
-    <script src="chengyu_frequency.js"></script>
+    <script src="character_data.js"></script>
     <script>
-      const DATA = window.CHENGYU_FREQUENCY_DATA || { entries: [], meta: {} };
+      const DATA = window.CHARACTER_DATA || { entries: [], meta: {} };
       const ALL_ENTRIES = DATA.entries || [];
-      const BAND_LABELS = {
-        all: "全部",
-        common: "常见",
-        core: "核心",
-        rare: "冷门",
-        hardest: "最难",
+      const META = DATA.meta || {};
+      const MODE_CONFIGS = {
+        normal: { label: "Normal", startLevel: 1 },
+        hard: { label: "Hard", startLevel: 2 },
+        veryHard: { label: "Very hard", startLevel: 3 },
       };
-      const BAND_KEYS = ["common", "core", "rare", "hardest"];
-      const DECKS = BAND_KEYS.reduce(
-        (decks, band) => {
-          decks[band] = ALL_ENTRIES.filter((entry) => entry.band === band);
-          return decks;
-        },
-        { all: ALL_ENTRIES },
+      const LEVEL_DECKS = Object.fromEntries(
+        Array.from({ length: 6 }, (_, index) => [index + 1, ALL_ENTRIES.filter((entry) => entry.level === index + 1)]),
       );
-      const QUESTION_SECONDS = 20;
+      const DECKS = Object.fromEntries(Object.entries(MODE_CONFIGS).map(([mode, config]) => [
+        mode,
+        Array.from({ length: 4 }, (_, offset) => LEVEL_DECKS[config.startLevel + offset] || []).flat(),
+      ]));
+      const PLAYABLE_CHARACTERS = new Set(ALL_ENTRIES.map((entry) => entry.hanzi));
+      const QUESTION_SECONDS = 60;
+      const ACCEPTED_RANK = 5;
+      const CAMPAIGN_QUESTIONS = 16;
 
       const state = {
-        active: false,
-        current: null,
-        filter: "all",
-        score: 0,
-        streak: 0,
-        lives: 3,
-        seconds: QUESTION_SECONDS,
-        correct: 0,
-        answered: 0,
-        guesses: 0,
-        resolving: false,
-        recent: [],
-        lastWords: [],
-        timerId: null,
+        active: false, recognizerReady: false, recognizerError: false, current: null,
+        filter: "normal", score: 0, streak: 0, lives: 5, seconds: QUESTION_SECONDS,
+        correct: 0, answered: 0, guesses: 0, resolving: false, recent: [], lastCharacters: [], timerId: null,
       };
 
-      const els = {
-        route: document.getElementById("route"),
-        startButton: document.getElementById("startButton"),
-        resetButton: document.getElementById("resetButton"),
-        skipButton: document.getElementById("skipButton"),
-        submitButton: document.getElementById("submitButton"),
-        answerForm: document.getElementById("answerForm"),
-        answerInput: document.getElementById("answerInput"),
-        feedback: document.getElementById("feedback"),
-        chengyuText: document.getElementById("chengyuText"),
-        questionLabel: document.getElementById("questionLabel"),
-        timer: document.getElementById("timer"),
-        score: document.getElementById("score"),
-        streak: document.getElementById("streak"),
-        lives: document.getElementById("lives"),
-        bestScore: document.getElementById("bestScore"),
-        sourceCount: document.getElementById("sourceCount"),
-        matchCount: document.getElementById("matchCount"),
-        recentList: document.getElementById("recentList"),
-        difficultyOverlay: document.getElementById("difficultyOverlay"),
-        difficultyStatus: document.getElementById("difficultyStatus"),
-        launchStartButton: document.getElementById("launchStartButton"),
-        overlay: document.getElementById("gameOverOverlay"),
-        gameOverCopy: document.getElementById("gameOverCopy"),
-        closeOverlayButton: document.getElementById("closeOverlayButton"),
-        playAgainButton: document.getElementById("playAgainButton"),
-        bandButtons: [...document.querySelectorAll("[data-band]")],
-        startBandButtons: [...document.querySelectorAll("[data-start-band]")],
-        startBandCounts: [...document.querySelectorAll("[data-start-count]")],
-      };
-
-      const hanPattern = /\p{Script=Han}/u;
+      const els = Object.fromEntries([
+        "route", "startButton", "resetButton", "skipButton", "checkButton", "feedback", "questionLabel", "timer",
+        "score", "streak", "lives", "bestScore", "sourceCount", "filterCount", "recentList", "difficultyOverlay",
+        "difficultyStatus", "launchStartButton", "gameOverOverlay", "gameOverTitle", "gameOverCopy", "closeOverlayButton", "playAgainButton",
+        "pinyinPrompt", "definitionPrompt", "writingBoard", "boardWrap", "boardLoading", "undoButton", "redoButton",
+        "clearButton", "candidates", "recognizerStatus",
+      ].map((id) => [id, document.getElementById(id)]));
+      els.modeButtons = [...document.querySelectorAll("[data-mode]")];
+      els.startModeButtons = [...document.querySelectorAll("[data-start-mode]")];
+      els.startModeCounts = [...document.querySelectorAll("[data-start-count]")];
 
       function escapeHtml(value) {
-        return String(value)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#39;");
+        return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+      function bestKey() { return `hanzi-de-go-writing-best-${state.filter}`; }
+      function getBestScore() { return Number(localStorage.getItem(bestKey()) || 0); }
+      function setBestScore(score) { if (score > getBestScore()) localStorage.setItem(bestKey(), String(score)); }
+      function deck() { return DECKS[state.filter] || []; }
+      function modeCount(mode) { return (DECKS[mode] || []).length; }
+      function modeConfig() { return MODE_CONFIGS[state.filter] || MODE_CONFIGS.normal; }
+      function questionLevel(questionIndex = state.answered) {
+        const stageOffset = questionIndex < 5 ? 0 : questionIndex < 10 ? 1 : questionIndex < 15 ? 2 : 3;
+        return modeConfig().startLevel + stageOffset;
+      }
+      function isBossQuestion(questionIndex = state.answered) { return questionIndex === CAMPAIGN_QUESTIONS - 1; }
+      function displayDefinition(value) { return value.replace(/\//g, " · "); }
+      function clueDefinition(value) {
+        return displayDefinition(value)
+          .replace(/[\p{Script=Han}]+(?:\|[\p{Script=Han}]+)?(?:\[[^\]]*\])?/gu, "[hidden character]")
+          .replace(/\s+/g, " ")
+          .trim();
       }
 
-      function bestKey() {
-        return `hanzi-de-go-chengyu-best-${state.filter}`;
-      }
-
-      function getBestScore() {
-        return Number(localStorage.getItem(bestKey()) || 0);
-      }
-
-      function setBestScore(score) {
-        const best = getBestScore();
-        if (score > best) {
-          localStorage.setItem(bestKey(), String(score));
-        }
-      }
-
-      function deck() {
-        return DECKS[state.filter] || [];
-      }
-
-      function bandCount(band) {
-        return (DECKS[band] || []).length;
+      function setFeedback(message, mood = "") {
+        els.feedback.className = `feedback${mood ? ` ${mood}` : ""}`;
+        els.feedback.textContent = message;
       }
 
       function syncDifficultyControls() {
-        els.bandButtons.forEach((button) => {
-          button.disabled = bandCount(button.dataset.band) === 0;
-          button.classList.toggle("active", button.dataset.band === state.filter);
+        els.modeButtons.forEach((button) => {
+          button.disabled = modeCount(button.dataset.mode) === 0;
+          button.classList.toggle("active", button.dataset.mode === state.filter);
         });
-
-        els.startBandButtons.forEach((button) => {
-          const band = button.dataset.startBand;
-          const selected = band === state.filter;
-          const hasEntries = bandCount(band) > 0;
+        els.startModeButtons.forEach((button) => {
+          const selected = button.dataset.startMode === state.filter;
           button.classList.toggle("active", selected);
           button.setAttribute("aria-checked", String(selected));
-          button.disabled = !hasEntries;
+          button.disabled = modeCount(button.dataset.startMode) === 0;
         });
-
-        els.launchStartButton.disabled = bandCount(state.filter) === 0;
-
-        els.startBandCounts.forEach((count) => {
-          const total = bandCount(count.dataset.startCount).toLocaleString("zh-Hans-CN");
-          count.textContent = `${total} words`;
+        els.startModeCounts.forEach((count) => {
+          count.textContent = `5 + 5 + 5 + boss · ${modeCount(count.dataset.startCount).toLocaleString("en-US")} characters`;
         });
+        els.launchStartButton.disabled = !state.recognizerReady || modeCount(state.filter) === 0;
+        els.launchStartButton.textContent = state.recognizerReady ? "Start writing" : "Loading recognizer…";
       }
 
-      function selectDifficulty(band) {
-        state.filter = band;
-        if (bandCount(band) > 0) {
-          els.difficultyStatus.textContent = "Select a word pool before the first question.";
-        }
+      function selectDifficulty(mode) {
+        state.filter = mode;
         syncDifficultyControls();
         render();
       }
 
-      function showDifficultyOverlay() {
-        syncDifficultyControls();
-        els.difficultyOverlay.classList.add("show");
-      }
+      function showDifficultyOverlay() { syncDifficultyControls(); els.difficultyOverlay.classList.add("show"); }
+      function hideDifficultyOverlay() { els.difficultyOverlay.classList.remove("show"); }
 
-      function hideDifficultyOverlay() {
-        els.difficultyOverlay.classList.remove("show");
-      }
+      const drawing = (() => {
+        const canvas = els.writingBoard;
+        const context = canvas.getContext("2d");
+        let strokes = [];
+        let redo = [];
+        let activeStroke = null;
+        let enabled = false;
+        let ocr = null;
+        let recognizing = false;
 
-      function toChars(word) {
-        return [...word];
-      }
-
-      function normalizeChinese(input) {
-        return [...input].filter((char) => hanPattern.test(char)).join("");
-      }
-
-      function makePattern(chars, blankIndex) {
-        return chars.map((char, index) => (index === blankIndex ? "□" : char)).join("");
-      }
-
-      function compareEntries(a, b) {
-        const aRank = a.rank || Number.MAX_SAFE_INTEGER;
-        const bRank = b.rank || Number.MAX_SAFE_INTEGER;
-        return b.frequency - a.frequency || aRank - bRank || a.word.localeCompare(b.word, "zh-Hans-CN");
-      }
-
-      function buildPatternIndex(entries) {
-        const index = new Map();
-        entries.forEach((entry) => {
-          const chars = toChars(entry.word);
-          chars.forEach((_, blankIndex) => {
-            if (!hanPattern.test(chars[blankIndex])) return;
-            const pattern = makePattern(chars, blankIndex);
-            const matches = index.get(pattern) || [];
-            matches.push(entry);
-            index.set(pattern, matches);
+        function resize() {
+          const rect = canvas.getBoundingClientRect();
+          const ratio = window.devicePixelRatio || 1;
+          canvas.width = Math.round(rect.width * ratio);
+          canvas.height = Math.round(rect.height * ratio);
+          context.setTransform(ratio, 0, 0, ratio, 0, 0);
+          redraw();
+        }
+        function drawStroke(targetContext, stroke, transform = (point) => point) {
+          if (!stroke.length) return;
+          const start = transform(stroke[0]);
+          targetContext.beginPath(); targetContext.moveTo(start[0], start[1]);
+          stroke.slice(1).forEach((point) => {
+            const transformed = transform(point);
+            targetContext.lineTo(transformed[0], transformed[1]);
           });
-        });
-        index.forEach((matches) => matches.sort(compareEntries));
-        return index;
-      }
-
-      const PATTERN_INDEX = buildPatternIndex(ALL_ENTRIES);
-
-      function acceptedFor(patternChars, blankIndex) {
-        return PATTERN_INDEX.get(makePattern(patternChars, blankIndex)) || [];
-      }
-
-      function frequencyLabel(entry) {
-        return entry.frequency > 0 ? `DF ${entry.frequency}` : "词典补充";
-      }
-
-      function rankLabel(entry) {
-        return entry.rank ? `#${entry.rank}` : "词典补充";
-      }
-
-      function setQuestionControls(enabled) {
-        els.answerInput.disabled = !enabled;
-        els.submitButton.disabled = !enabled;
-        els.skipButton.disabled = !enabled;
-      }
-
-      function chooseQuestion() {
-        const pool = deck();
-        if (pool.length === 0) {
-          setFeedback("题库未加载", "bad");
-          return;
+          if (stroke.length === 1) targetContext.lineTo(start[0] + .1, start[1] + .1);
+          targetContext.stroke();
+        }
+        function redraw() {
+          const ratio = window.devicePixelRatio || 1;
+          context.clearRect(0, 0, canvas.width / ratio, canvas.height / ratio);
+          context.lineWidth = Math.max(7, canvas.clientWidth / 48);
+          context.lineCap = "round"; context.lineJoin = "round"; context.strokeStyle = "#111815";
+          strokes.forEach((stroke) => drawStroke(context, stroke));
+          if (activeStroke) drawStroke(context, activeStroke);
+          syncButtons();
+        }
+        function pointFor(event) {
+          const rect = canvas.getBoundingClientRect();
+          return [event.clientX - rect.left, event.clientY - rect.top];
+        }
+        function distance(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1]); }
+        function pointerDown(event) {
+          if (!enabled || state.resolving) return;
+          event.preventDefault(); canvas.setPointerCapture(event.pointerId);
+          activeStroke = [pointFor(event)]; redo = []; redraw();
+        }
+        function pointerMove(event) {
+          if (!activeStroke) return;
+          event.preventDefault();
+          const point = pointFor(event);
+          if (distance(point, activeStroke[activeStroke.length - 1]) > 1.5) { activeStroke.push(point); redraw(); }
+        }
+        function pointerUp(event) {
+          if (!activeStroke) return;
+          event.preventDefault();
+          const point = pointFor(event);
+          if (distance(point, activeStroke[activeStroke.length - 1]) > 1) activeStroke.push(point);
+          strokes.push(activeStroke); activeStroke = null; resetOcrResult(); redraw();
         }
 
-        const fresh = pool.filter((entry) => !state.lastWords.includes(entry.word));
-        const choices = fresh.length > 0 ? fresh : pool;
-        const source = choices[Math.floor(Math.random() * choices.length)];
-        const chars = toChars(source.word);
-        const blankableIndices = chars
-          .map((char, index) => (hanPattern.test(char) ? index : null))
-          .filter((index) => index !== null);
-        const blankIndex = blankableIndices[Math.floor(Math.random() * blankableIndices.length)];
-        const accepted = acceptedFor(chars, blankIndex);
+        function thumbnail() {
+          const points = strokes.flat();
+          if (!points.length) return "";
+          const xs = points.map((point) => point[0]);
+          const ys = points.map((point) => point[1]);
+          const minX = Math.min(...xs); const maxX = Math.max(...xs);
+          const minY = Math.min(...ys); const maxY = Math.max(...ys);
+          const side = Math.max(12, maxX - minX, maxY - minY);
+          const size = 88;
+          const scale = 68 / side;
+          const centerX = (minX + maxX) / 2;
+          const centerY = (minY + maxY) / 2;
+          const thumbnailCanvas = document.createElement("canvas");
+          thumbnailCanvas.width = size; thumbnailCanvas.height = size;
+          const thumbnailContext = thumbnailCanvas.getContext("2d");
+          thumbnailContext.fillStyle = "#fffdf8";
+          thumbnailContext.fillRect(0, 0, size, size);
+          thumbnailContext.strokeStyle = "#111815";
+          thumbnailContext.lineCap = "round"; thumbnailContext.lineJoin = "round";
+          thumbnailContext.lineWidth = Math.max(2.5, Math.min(7, (canvas.clientWidth / 48) * scale));
+          const transform = (point) => [
+            (point[0] - centerX) * scale + size / 2,
+            (point[1] - centerY) * scale + size / 2,
+          ];
+          strokes.forEach((stroke) => drawStroke(thumbnailContext, stroke, transform));
+          return thumbnailCanvas.toDataURL("image/webp", .72);
+        }
 
-        state.lastWords = [source.word, ...state.lastWords].slice(0, 12);
-        state.seconds = QUESTION_SECONDS;
-        state.guesses = 0;
-        state.resolving = false;
-        state.current = {
-          source,
-          chars,
-          blankIndex,
-          pattern: makePattern(chars, blankIndex),
-          accepted,
-        };
-        setQuestionControls(true);
-        renderQuestion();
+        function createOcrCanvas() {
+          const points = strokes.flat();
+          const xs = points.map((point) => point[0]);
+          const ys = points.map((point) => point[1]);
+          const minX = Math.min(...xs); const maxX = Math.max(...xs);
+          const minY = Math.min(...ys); const maxY = Math.max(...ys);
+          const inkWidth = Math.max(12, maxX - minX);
+          const inkHeight = Math.max(12, maxY - minY);
+          const side = Math.max(inkWidth, inkHeight);
+          const outputWidth = 320;
+          const outputHeight = 48;
+          const scale = 40 / side;
+          const centerX = (minX + maxX) / 2;
+          const centerY = (minY + maxY) / 2;
+          const ocrCanvas = document.createElement("canvas");
+          ocrCanvas.width = outputWidth; ocrCanvas.height = outputHeight;
+          const ocrContext = ocrCanvas.getContext("2d");
+          ocrContext.fillStyle = "#ffffff";
+          ocrContext.fillRect(0, 0, outputWidth, outputHeight);
+          ocrContext.strokeStyle = "#000000";
+          ocrContext.lineCap = "round"; ocrContext.lineJoin = "round";
+          ocrContext.lineWidth = Math.max(2, Math.min(5, (canvas.clientWidth / 48) * scale));
+          const transform = (point) => [
+            (point[0] - centerX) * scale + outputHeight / 2,
+            (point[1] - centerY) * scale + outputHeight / 2,
+          ];
+          strokes.forEach((stroke) => drawStroke(ocrContext, stroke, transform));
+          return ocrCanvas;
+        }
+
+        async function recognize() {
+          if (!ocr || !state.recognizerReady || strokes.length === 0 || recognizing) return false;
+          recognizing = true; syncButtons();
+          setFeedback("OCR is reading the finished character…");
+          try {
+            const ocrCanvas = createOcrCanvas();
+            const pixels = ocrCanvas.getContext("2d").getImageData(0, 0, ocrCanvas.width, ocrCanvas.height).data;
+            const planeSize = ocrCanvas.width * ocrCanvas.height;
+            const tensorData = new Float32Array(planeSize * 3);
+            for (let index = 0; index < planeSize; index += 1) {
+              const normalized = (pixels[index * 4] / 255 - 0.5) / 0.5;
+              tensorData[index] = normalized;
+              tensorData[planeSize + index] = normalized;
+              tensorData[planeSize * 2 + index] = normalized;
+            }
+            const tensor = new ocr.ort.Tensor("float32", tensorData, [1, 3, 48, 320]);
+            const feeds = { [ocr.session.inputNames[0]]: tensor };
+            const outputs = await ocr.session.run(feeds);
+            const output = outputs[ocr.session.outputNames[0]];
+            const classCount = output.dims[output.dims.length - 1];
+            const timeSteps = output.data.length / classCount;
+            let firstRowSum = 0;
+            let firstRowIsNonnegative = true;
+            for (let label = 0; label < classCount; label += 1) {
+              const value = output.data[label];
+              firstRowSum += value;
+              if (value < 0) firstRowIsNonnegative = false;
+            }
+            const outputIsProbability = firstRowIsNonnegative && Math.abs(firstRowSum - 1) < 0.02;
+            const rowLogNormalizers = new Float64Array(timeSteps);
+            if (!outputIsProbability) {
+              for (let time = 0; time < timeSteps; time += 1) {
+                const offset = time * classCount;
+                let rowMax = -Infinity;
+                for (let label = 0; label < classCount; label += 1) rowMax = Math.max(rowMax, output.data[offset + label]);
+                let exponentialSum = 0;
+                for (let label = 0; label < classCount; label += 1) exponentialSum += Math.exp(output.data[offset + label] - rowMax);
+                rowLogNormalizers[time] = rowMax + Math.log(exponentialSum);
+              }
+            }
+            const logProbability = (time, label) => {
+              const value = output.data[time * classCount + label];
+              return outputIsProbability ? Math.log(Math.max(value, 1e-12)) : value - rowLogNormalizers[time];
+            };
+            const blankLogProbabilities = Array.from({ length: timeSteps }, (_, time) => logProbability(time, 0));
+            const matches = [];
+            for (let label = 1; label < classCount - 1; label += 1) {
+              const hanzi = ocr.labels[label];
+              if (!PLAYABLE_CHARACTERS.has(hanzi)) continue;
+              let blankBefore = 0;
+              let characterState = -Infinity;
+              let blankAfter = -Infinity;
+              for (let time = 0; time < timeSteps; time += 1) {
+                const blankScore = blankLogProbabilities[time];
+                const characterScore = logProbability(time, label);
+                const nextBlankBefore = blankBefore + blankScore;
+                const nextCharacterState = Math.max(blankBefore, characterState) + characterScore;
+                const nextBlankAfter = Math.max(characterState, blankAfter) + blankScore;
+                blankBefore = nextBlankBefore;
+                characterState = nextCharacterState;
+                blankAfter = nextBlankAfter;
+              }
+              matches.push({ hanzi, score: Math.max(characterState, blankAfter) / timeSteps });
+            }
+            matches.sort((a, b) => b.score - a.score);
+            matches.splice(8);
+            renderCandidates(matches);
+            evaluateRecognition(matches);
+          } catch (error) {
+            setFeedback(`OCR failed: ${error.message || String(error)}`, "bad");
+          } finally {
+            recognizing = false;
+            if (!state.resolving) syncButtons();
+          }
+          return true;
+        }
+
+        function renderCandidates(matches) {
+          if (!matches.length) {
+            els.candidates.innerHTML = '<span class="candidate-placeholder">No whole-character match detected. Enlarge or clarify the finished shape.</span>';
+            return;
+          }
+          els.candidates.innerHTML = matches.map((match, index) => `<span class="candidate" data-rank="${index + 1}" title="Whole-character alternative ${index + 1}; score ${Number(match.score).toFixed(3)}" aria-label="Alternative ${index + 1}: ${escapeHtml(match.hanzi)}">${escapeHtml(match.hanzi)}</span>`).join("");
+        }
+        function resetOcrResult() {
+          els.candidates.innerHTML = '<span class="candidate-placeholder">Finish the character, then press Check writing.</span>';
+        }
+        function syncButtons() {
+          els.undoButton.disabled = !enabled || strokes.length === 0;
+          els.redoButton.disabled = !enabled || redo.length === 0;
+          els.clearButton.disabled = !enabled || strokes.length === 0;
+          els.checkButton.disabled = !enabled || strokes.length === 0 || recognizing;
+        }
+        function clear() {
+          strokes = []; redo = []; activeStroke = null;
+          resetOcrResult();
+          redraw();
+        }
+        function undo() {
+          if (!strokes.length) return;
+          redo.push(strokes.pop());
+          resetOcrResult();
+          redraw();
+        }
+        function redoStroke() { if (!redo.length) return; strokes.push(redo.pop()); resetOcrResult(); redraw(); }
+        function setEnabled(value) { enabled = value; canvas.style.cursor = value ? "crosshair" : "not-allowed"; syncButtons(); }
+
+        async function initOcr() {
+          try {
+            const ort = await import("https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/+esm");
+            ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/";
+            ort.env.wasm.numThreads = 1;
+            const [session, dictionaryText] = await Promise.all([
+              ort.InferenceSession.create("vendor/paddleocr/ppocrv5_mobile_rec.onnx", {
+                executionProviders: ["wasm"],
+                graphOptimizationLevel: "all",
+              }),
+              fetch("vendor/paddleocr/ppocrv5_dict.txt").then((response) => {
+                if (!response.ok) throw new Error(`Dictionary download failed (${response.status})`);
+                return response.text();
+              }),
+            ]);
+            const dictionary = dictionaryText.replace(/\r/g, "").split("\n").filter((line) => line.length > 0);
+            ocr = { ort, session, labels: ["", ...dictionary, " "] };
+            state.recognizerReady = true;
+            els.boardWrap.classList.remove("loading");
+            els.recognizerStatus.innerHTML = '<span class="status-dot ready"></span>Ready';
+            els.difficultyStatus.textContent = `${META.playableRows?.toLocaleString("en-US") || ALL_ENTRIES.length} OCR-supported characters are ready.`;
+            setFeedback("Final-image OCR is ready · Choose a level and start.");
+            syncDifficultyControls();
+          } catch (error) { recognizerFailed(error.message || String(error)); }
+        }
+        function recognizerFailed(message) {
+          if (state.recognizerError) return;
+          state.recognizerError = true;
+          els.boardLoading.textContent = "Recognizer failed to load";
+          els.recognizerStatus.innerHTML = '<span class="status-dot error"></span>Error';
+          els.difficultyStatus.textContent = "The handwriting OCR could not load. Check the network connection and reload.";
+          setFeedback(`OCR initialization error: ${message}`, "bad");
+          syncDifficultyControls();
+        }
+        canvas.addEventListener("pointerdown", pointerDown);
+        canvas.addEventListener("pointermove", pointerMove);
+        canvas.addEventListener("pointerup", pointerUp);
+        canvas.addEventListener("pointercancel", pointerUp);
+        new ResizeObserver(resize).observe(canvas);
+        return { clear, undo, redo: redoStroke, setEnabled, recognize, initOcr, thumbnail, hasStrokes: () => strokes.length > 0 };
+      })();
+
+      function chooseQuestion() {
+        const level = questionLevel();
+        const pool = LEVEL_DECKS[level] || [];
+        const fresh = pool.filter((entry) => !state.lastCharacters.includes(entry.hanzi));
+        const choices = fresh.length ? fresh : pool;
+        const source = choices[Math.floor(Math.random() * choices.length)];
+        if (!source) { endGame(); return; }
+        state.lastCharacters = [source.hanzi, ...state.lastCharacters].slice(0, 18);
+        state.seconds = QUESTION_SECONDS; state.guesses = 0; state.resolving = false; state.current = source;
+        drawing.clear(); drawing.setEnabled(true);
+        els.skipButton.disabled = false;
+        renderQuestion(); render();
+      }
+
+      function renderQuestion() {
+        const entry = state.current;
+        if (!entry) return;
+        const boss = isBossQuestion();
+        els.questionLabel.classList.toggle("boss", boss);
+        els.questionLabel.textContent = boss
+          ? `Final boss · Level ${entry.level} · 16/16`
+          : `${modeConfig().label} · Level ${entry.level} · ${state.answered + 1}/16`;
+        els.pinyinPrompt.textContent = entry.pinyin;
+        els.definitionPrompt.textContent = clueDefinition(entry.definition);
       }
 
       function startGame() {
-        if (deck().length === 0) {
-          els.difficultyStatus.textContent = "No words available for this difficulty.";
-          setFeedback("No words for this difficulty.", "bad");
-          showDifficultyOverlay();
-          return;
-        }
-
+        if (!state.recognizerReady || modeCount(state.filter) === 0) return;
         clearInterval(state.timerId);
-        state.active = true;
-        state.score = 0;
-        state.streak = 0;
-        state.lives = 3;
-        state.seconds = QUESTION_SECONDS;
-        state.correct = 0;
-        state.answered = 0;
-        state.guesses = 0;
-        state.resolving = false;
-        state.recent = [];
-        state.lastWords = [];
-        hideDifficultyOverlay();
-        els.overlay.classList.remove("show");
-        setQuestionControls(true);
-        els.startButton.textContent = "Restart";
-        setFeedback("下一站", "");
-        chooseQuestion();
-        render();
-        els.answerInput.focus();
-        state.timerId = setInterval(tick, 1000);
+        Object.assign(state, { active: true, current: null, score: 0, streak: 0, lives: 5, seconds: QUESTION_SECONDS, correct: 0, answered: 0, guesses: 0, resolving: false, recent: [], lastCharacters: [] });
+        hideDifficultyOverlay(); els.gameOverOverlay.classList.remove("show"); els.startButton.textContent = "Restart";
+        setFeedback("Write the character that matches the clue.");
+        chooseQuestion(); state.timerId = setInterval(tick, 1000);
       }
 
       function resetGame({ showChooser = false } = {}) {
         clearInterval(state.timerId);
-        state.active = false;
-        state.current = null;
-        state.score = 0;
-        state.streak = 0;
-        state.lives = 3;
-        state.seconds = QUESTION_SECONDS;
-        state.correct = 0;
-        state.answered = 0;
-        state.guesses = 0;
-        state.resolving = false;
-        state.recent = [];
-        state.lastWords = [];
-        els.chengyuText.innerHTML = renderPattern(["准", "备", "□", "车"], 2);
-        els.questionLabel.textContent = BAND_LABELS[state.filter] || "成语";
-        els.answerInput.value = "";
-        setQuestionControls(false);
-        els.startButton.textContent = "Start";
-        els.overlay.classList.remove("show");
-        if (showChooser) {
-          showDifficultyOverlay();
-        } else {
-          hideDifficultyOverlay();
-        }
-        setFeedback("准备发车", "");
+        Object.assign(state, { active: false, current: null, score: 0, streak: 0, lives: 5, seconds: QUESTION_SECONDS, correct: 0, answered: 0, guesses: 0, resolving: false, recent: [], lastCharacters: [] });
+        drawing.clear(); drawing.setEnabled(false); els.skipButton.disabled = true; els.startButton.textContent = "Start";
+        els.questionLabel.classList.remove("boss"); els.questionLabel.textContent = "准备中"; els.pinyinPrompt.textContent = "pīnyīn";
+        els.definitionPrompt.textContent = "Read the clue, then write one simplified Chinese character.";
+        els.gameOverOverlay.classList.remove("show");
+        if (showChooser) showDifficultyOverlay(); else hideDifficultyOverlay();
+        if (state.recognizerReady) setFeedback("Final-image OCR is ready · Choose a level and start.");
         render();
       }
 
       function tick() {
         if (!state.active || state.resolving) return;
         state.seconds -= 1;
-        if (state.seconds <= 0) {
-          state.seconds = 0;
-          timeOutQuestion();
-        }
+        if (state.seconds <= 0) { state.seconds = 0; resolveQuestion({ ok: false, reason: "时间到", recognized: "" }); }
         render();
       }
 
-      function renderPattern(chars, blankIndex) {
-        els.chengyuText.style.setProperty("--chengyu-columns", Math.min(chars.length, 4));
-        return chars
-          .map((char, index) => {
-            const blank = index === blankIndex || char === "□";
-            return `<span class="chengyu-char${blank ? " blank" : ""}">${blank ? "□" : escapeHtml(char)}</span>`;
-          })
-          .join("");
+      function checkWriting() {
+        if (!state.active || state.resolving) return;
+        if (!drawing.hasStrokes()) { setFeedback("Write a character before checking.", "warn"); return; }
+        drawing.recognize();
       }
 
-      function renderQuestion() {
-        if (!state.current) return;
-        els.chengyuText.innerHTML = renderPattern(state.current.chars, state.current.blankIndex);
-        els.questionLabel.textContent = `${BAND_LABELS[state.current.source.band]} · ${rankLabel(state.current.source)}`;
-        els.matchCount.textContent = state.current.accepted.length;
-        els.answerInput.value = "";
-      }
-
-      function render() {
-        els.timer.textContent = state.seconds;
-        els.score.textContent = state.score;
-        els.streak.textContent = state.streak;
-        els.lives.textContent = "●".repeat(state.lives) || "0";
-        els.bestScore.textContent = getBestScore();
-        els.sourceCount.textContent = deck().length.toLocaleString("zh-Hans-CN");
-        if (!state.current) {
-          els.matchCount.textContent = "0";
+      function evaluateRecognition(matches) {
+        if (!state.active || !state.current || state.resolving) return;
+        const rank = matches.slice(0, ACCEPTED_RANK).findIndex((match) => match.hanzi === state.current.hanzi);
+        if (rank >= 0) {
+          resolveQuestion({ ok: true, reason: `Recognized at rank ${rank + 1}`, recognized: matches[0]?.hanzi || "", rank });
+          return;
         }
-        const progress = Math.min(100, Math.round((state.correct / 20) * 100));
-        els.route.style.setProperty("--train-x", `${progress}%`);
-        renderRecent();
+        state.guesses += 1; state.streak = 0;
+        const seen = matches.map((match) => match.hanzi).join("、") || "没有匹配";
+        setFeedback(`Not yet — top whole-character alternatives: ${seen}. Adjust the finished shape and try again.`, "warn");
+        render();
+      }
+
+      function resolveQuestion({ ok, reason, recognized, rank = -1 }) {
+        if (!state.current || state.resolving) return;
+        const current = state.current;
+        state.resolving = true; state.answered += 1; drawing.setEnabled(false); els.skipButton.disabled = true;
+        if (ok) {
+          const missPenalty = state.guesses * 18;
+          state.score += Math.max(30, 110 + state.streak * 12 + state.seconds * 2 - rank * 8 - missPenalty);
+          state.streak += 1; state.correct += 1;
+          setFeedback(`正确！${current.hanzi} · ${current.pinyin} · ${displayDefinition(current.definition)}`, "good");
+        } else {
+          state.lives -= 1; state.streak = 0;
+          setFeedback(`${reason} · 答案是 ${current.hanzi} (${current.pinyin}) — ${displayDefinition(current.definition)}`, "bad");
+        }
+        state.recent.unshift({ entry: current, ok, recognized, reason, image: drawing.thumbnail() });
+        state.recent = state.recent.slice(0, 5);
+        render();
+        if (state.lives <= 0) { setTimeout(endGame, 950); return; }
+        if (state.answered >= CAMPAIGN_QUESTIONS) { setTimeout(endGame, 950); return; }
+        setTimeout(() => { if (state.active) chooseQuestion(); }, 1450);
+      }
+
+      function skipQuestion() { if (state.active && !state.resolving) resolveQuestion({ ok: false, reason: "跳过", recognized: "" }); }
+      function endGame() {
+        if (!state.active) return;
+        clearInterval(state.timerId); state.active = false; state.resolving = false; setBestScore(state.score);
+        drawing.setEnabled(false); els.skipButton.disabled = true; els.startButton.textContent = "Start";
+        const cleared = state.answered >= CAMPAIGN_QUESTIONS && state.lives > 0;
+        els.gameOverTitle.textContent = cleared ? "Campaign clear!" : "Run over";
+        els.gameOverCopy.textContent = `${modeConfig().label} · Score: ${state.score} · Correct: ${state.correct}/${state.answered}`;
+        els.gameOverOverlay.classList.add("show"); render();
       }
 
       function renderRecent() {
-        if (state.recent.length === 0) {
-          els.recentList.innerHTML = '<div class="empty-recent">暂无记录</div>';
-          return;
-        }
-
-        els.recentList.innerHTML = state.recent
-          .slice(0, 5)
-          .map((item) => `
-            <div class="recent-row">
-              <div class="recent-pattern">${escapeHtml(item.pattern)}</div>
-              <div class="recent-main">
-                <div class="recent-answer">${escapeHtml(item.userAnswer || "跳过")} → ${escapeHtml(item.answerSummary)}</div>
-                <div class="recent-meta">${item.acceptedCount} 个可能 · ${escapeHtml(item.sourceLabel)}</div>
-              </div>
-              <div class="recent-mark ${item.ok ? "ok" : "no"}">${item.ok ? "✓" : "×"}</div>
-            </div>
-          `)
-          .join("");
+        if (!state.recent.length) { els.recentList.innerHTML = '<div class="empty-recent">答题后会显示答案</div>'; return; }
+        els.recentList.innerHTML = state.recent.slice(0, 5).map((item) => `
+          <div class="recent-row">
+            <div class="recent-writing">${item.image ? `<img src="${escapeHtml(item.image)}" alt="Player writing for ${escapeHtml(item.entry.hanzi)}">` : "—"}</div>
+            <div class="recent-hanzi">${escapeHtml(item.entry.hanzi)}</div>
+            <div class="recent-main"><div class="recent-answer">${escapeHtml(item.entry.pinyin)} · Level ${item.entry.level}</div><div class="recent-meta">${escapeHtml(displayDefinition(item.entry.definition))}</div></div>
+            <div class="recent-mark ${item.ok ? "ok" : "no"}">${item.ok ? "✓" : "×"}</div>
+          </div>`).join("");
       }
 
-      function setFeedback(message, mood) {
-        els.feedback.className = `feedback${mood ? ` ${mood}` : ""}`;
-        els.feedback.textContent = message;
+      function render() {
+        els.timer.textContent = state.seconds; els.score.textContent = state.score; els.streak.textContent = state.streak;
+        els.lives.textContent = "●".repeat(state.lives) || "0"; els.bestScore.textContent = getBestScore();
+        els.sourceCount.textContent = modeCount(state.filter).toLocaleString("en-US");
+        els.filterCount.textContent = `${META.rejectedRows || 0} excluded`;
+        els.route.style.setProperty("--train-x", `${Math.min(100, Math.round((state.answered / CAMPAIGN_QUESTIONS) * 100))}%`);
+        renderRecent(); syncDifficultyControls();
       }
 
-      function setFeedbackHtml(html, mood) {
-        els.feedback.className = `feedback${mood ? ` ${mood}` : ""}`;
-        els.feedback.innerHTML = html;
-      }
-
-      function definitionText(entry) {
-        return entry.explanation || "暂无释义";
-      }
-
-      function definitionsHtml(entries, revealWords) {
-        return `
-          <div class="definition-list">
-            ${entries
-              .map((entry) => `
-                <div class="definition-item">
-                  <strong>${revealWords ? escapeHtml(entry.word) : "释义"}</strong>
-                  <span>${escapeHtml(definitionText(entry))}</span>
-                </div>
-              `)
-              .join("")}
-          </div>
-        `;
-      }
-
-      function acceptedHtml(current, ok, reason) {
-        const chips = current.accepted
-          .map((entry) => {
-            const meta = `<small>${escapeHtml(frequencyLabel(entry))}</small>`;
-            return `<span class="answer-chip">${escapeHtml(entry.word)} ${meta}</span>`;
-          })
-          .join("");
-        const title = ok ? "可填" : reason || "答案";
-        return `
-          <div class="accepted-title">${title}: ${current.pattern} · ${current.accepted.length} 个可能</div>
-          <div class="answers-list">${chips}</div>
-          ${definitionsHtml(current.accepted, true)}
-        `;
-      }
-
-      function guessFeedbackHtml(current, userAnswer) {
-        return `
-          <div class="accepted-title">再试一次: ${escapeHtml(userAnswer)} 不匹配 ${current.pattern}</div>
-          ${definitionsHtml([current.source], false)}
-        `;
-      }
-
-      function answerCurrent() {
-        if (!state.active || !state.current || state.resolving) return;
-        const raw = normalizeChinese(els.answerInput.value);
-        if (!raw) {
-          setFeedback("填入汉字", "warn");
-          els.answerInput.focus();
-          return;
-        }
-
-        const current = state.current;
-        state.guesses += 1;
-        const ok = current.accepted.some((entry) => {
-          const chars = toChars(entry.word);
-          return raw === chars[current.blankIndex] || raw === normalizeChinese(entry.word);
-        });
-
-        if (ok) {
-          resolveQuestion({ ok: true, userAnswer: raw, mood: "good", reason: "可填", loseLife: false });
-          return;
-        }
-
-        state.streak = 0;
-        els.answerInput.value = "";
-        setFeedbackHtml(guessFeedbackHtml(current, raw), "warn");
-        render();
-        els.answerInput.focus();
-      }
-
-      function resolveQuestion({ ok, userAnswer, mood, reason, loseLife }) {
-        const current = state.current;
-        state.resolving = true;
-        setQuestionControls(false);
-        state.answered += 1;
-        if (loseLife) {
-          state.lives -= 1;
-        }
-        if (ok) {
-          const missPenalty = Math.max(0, state.guesses - 1) * 20;
-          state.score += Math.max(25, 100 + state.streak * 10 - missPenalty);
-          state.streak += 1;
-          state.correct += 1;
-        } else {
-          state.streak = 0;
-        }
-        state.recent.unshift({
-          pattern: current.pattern,
-          userAnswer,
-          answerSummary: current.accepted.map((entry) => entry.word).join("、"),
-          acceptedCount: current.accepted.length,
-          sourceLabel: frequencyLabel(current.source),
-          ok,
-        });
-        setFeedbackHtml(acceptedHtml(current, ok, reason), mood);
-        render();
-
-        if (state.lives <= 0) {
-          setTimeout(endGame, 650);
-          return;
-        }
-        setTimeout(() => {
-          if (state.active) {
-            chooseQuestion();
-            els.answerInput.focus();
-          }
-        }, 1200);
-      }
-
-      function skipQuestion() {
-        if (!state.active || !state.current || state.resolving) return;
-        resolveQuestion({ ok: false, userAnswer: "", mood: "bad", reason: "跳过", loseLife: true });
-      }
-
-      function timeOutQuestion() {
-        if (!state.active || !state.current || state.resolving) return;
-        resolveQuestion({ ok: false, userAnswer: "超时", mood: "bad", reason: "时间到", loseLife: true });
-      }
-
-      function endGame() {
-        if (!state.active) return;
-        clearInterval(state.timerId);
-        state.active = false;
-        setBestScore(state.score);
-        state.resolving = false;
-        setQuestionControls(false);
-        els.startButton.textContent = "Start";
-        els.gameOverCopy.textContent = `Score: ${state.score} · Correct: ${state.correct}/${state.answered}`;
-        els.overlay.classList.add("show");
-        render();
-      }
-
-      els.answerForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        answerCurrent();
-      });
-
-      els.startButton.addEventListener("click", () => {
-        if (state.active) {
-          startGame();
-          return;
-        }
-        showDifficultyOverlay();
-      });
+      els.startButton.addEventListener("click", () => state.active ? startGame() : showDifficultyOverlay());
       els.launchStartButton.addEventListener("click", startGame);
       els.resetButton.addEventListener("click", () => resetGame({ showChooser: true }));
       els.skipButton.addEventListener("click", skipQuestion);
+      els.checkButton.addEventListener("click", checkWriting);
+      els.undoButton.addEventListener("click", drawing.undo);
+      els.redoButton.addEventListener("click", drawing.redo);
+      els.clearButton.addEventListener("click", drawing.clear);
       els.playAgainButton.addEventListener("click", startGame);
-      els.closeOverlayButton.addEventListener("click", () => {
-        els.overlay.classList.remove("show");
-      });
-
-      els.startBandButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          selectDifficulty(button.dataset.startBand);
-        });
-      });
-
-      els.bandButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          selectDifficulty(button.dataset.band);
-          resetGame({ showChooser: true });
-        });
+      els.closeOverlayButton.addEventListener("click", () => els.gameOverOverlay.classList.remove("show"));
+      els.startModeButtons.forEach((button) => button.addEventListener("click", () => selectDifficulty(button.dataset.startMode)));
+      els.modeButtons.forEach((button) => button.addEventListener("click", () => { selectDifficulty(button.dataset.mode); resetGame({ showChooser: true }); }));
+      document.addEventListener("keydown", (event) => {
+        if (!(event.ctrlKey || event.metaKey)) return;
+        if (event.key.toLowerCase() === "z") { event.preventDefault(); event.shiftKey ? drawing.redo() : drawing.undo(); }
+        if (event.key.toLowerCase() === "y") { event.preventDefault(); drawing.redo(); }
       });
 
       resetGame({ showChooser: true });
-
-      if (ALL_ENTRIES.length === 0) {
-        setFeedback("题库未加载", "bad");
-        els.startButton.disabled = true;
-        els.launchStartButton.disabled = true;
-        els.difficultyStatus.textContent = "Question set failed to load.";
+      drawing.initOcr();
+      if (!ALL_ENTRIES.length) {
+        setFeedback("Character data failed to load.", "bad");
+        els.startButton.disabled = true; els.difficultyStatus.textContent = "Character set failed to load.";
       }
     </script>
   </body>
