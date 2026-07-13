@@ -2,7 +2,7 @@
 
 A browser-based simplified Chinese character writing sprint.
 
-The game gives a pinyin and a concise Chinese definition from `word.json`. Round-parenthetical content is removed, clues are capped at 50 characters with `...`, and every occurrence of the answer glyph or its listed traditional form is shown as `~` until resolution. Draw the matching character on the canvas, then press **Check writing**. The completed ink is normalized into an image and recognized by PP-OCRv5; stroke order and stroke direction are not passed to the model.
+The game gives a pinyin and a concise Chinese definition from `word.json`. Round-parenthetical content is removed, clues are capped at 100 characters with `...`, and every occurrence of the answer glyph or its listed traditional form is shown as `~` until resolution. Draw the matching character on the canvas, then press **Check writing**. The completed ink is normalized into an image and recognized by PP-OCRv5; stroke order and stroke direction are not passed to the model.
 
 Undo, redo, clear, OCR candidates, six frequency levels, three campaign modes, lives, streaks, scoring, 60-second questions, and local best scores are included. The five most recent results retain small in-memory thumbnails of the player's writing; they are never uploaded or persisted.
 

@@ -21,8 +21,8 @@ function Get-ConciseDefinition([string]$value) {
   } while ($clean -ne $previous)
   $clean = (($clean -replace "[()]", " ") -replace "\uFF08|\uFF09", " ")
   $clean = ($clean -replace "\s+", " ").Trim()
-  if ($clean.Length -le 50) { return $clean }
-  return $clean.Substring(0, 47).TrimEnd() + "..."
+  if ($clean.Length -le 100) { return $clean }
+  return $clean.Substring(0, 97).TrimEnd() + "..."
 }
 
 $supportedText = [System.IO.File]::ReadAllText($supportedPath, [System.Text.Encoding]::UTF8)
