@@ -635,7 +635,6 @@
 
         async function recognize() {
           if (!ocr || !state.recognizerReady || strokes.length === 0 || recognizing) return false;
-          setSelfMarkAvailable(false);
           recognizing = true; syncButtons();
           setFeedback("OCR is reading the finished character…");
           try {
@@ -719,7 +718,6 @@
           els.candidates.innerHTML = matches.map((match, index) => `<span class="candidate" data-rank="${index + 1}" title="Whole-character alternative ${index + 1}; score ${Number(match.score).toFixed(3)}" aria-label="Alternative ${index + 1}: ${escapeHtml(match.hanzi)}">${escapeHtml(match.hanzi)}</span>`).join("");
         }
         function resetOcrResult() {
-          setSelfMarkAvailable(false);
           els.candidates.innerHTML = '<span class="candidate-placeholder">Finish the character, then press Check writing.</span>';
         }
         function syncButtons() {
@@ -795,7 +793,8 @@
         state.seconds = QUESTION_SECONDS; state.guesses = 0; state.resolving = false; state.current = source;
         state.questionStreak = state.streak;
         drawing.clear(); drawing.setEnabled(true);
-        els.skipButton.disabled = false;
+        setSelfMarkAvailable(false);
+        els.skipButton.textContent = "Skip"; els.skipButton.disabled = false;
         renderQuestion(); render();
       }
 
@@ -823,7 +822,8 @@
       function resetGame({ showChooser = false } = {}) {
         clearInterval(state.timerId);
         Object.assign(state, { active: false, current: null, score: 0, streak: 0, lives: 5, seconds: QUESTION_SECONDS, correct: 0, answered: 0, guesses: 0, resolving: false, recent: [], lastCharacters: [] });
-        drawing.clear(); drawing.setEnabled(false); els.skipButton.disabled = true; els.startButton.textContent = "Start";
+        setSelfMarkAvailable(false);
+        drawing.clear(); drawing.setEnabled(false); els.skipButton.textContent = "Skip"; els.skipButton.disabled = true; els.startButton.textContent = "Start";
         els.questionLabel.classList.remove("boss"); els.questionLabel.textContent = "准备中"; els.pinyinPrompt.textContent = "pīnyīn";
         els.definitionPrompt.textContent = "Read the clue, then write one simplified Chinese character.";
         els.gameOverOverlay.classList.remove("show");
@@ -854,18 +854,28 @@
         }
         state.guesses += 1; state.streak = 0;
         const seen = matches.map((match) => match.hanzi).join("、") || "没有匹配";
-        setSelfMarkAvailable(true, matches[0]?.hanzi || "");
-        setFeedback(`OCR marked this wrong — top whole-character alternatives: ${seen}. Try again, or mark your answer right if the OCR misread it.`, "warn");
+        setFeedback(`Not yet — top whole-character alternatives: ${seen}. Adjust the finished shape and try again.`, "warn");
         render();
       }
 
       function selfMarkCorrect() {
-        if (!state.active || !state.current || state.resolving || !state.selfMarkAvailable) return;
-        const recognized = state.pendingRecognized;
+        if (!state.active || !state.current || !state.resolving || !state.selfMarkAvailable) return;
+        const current = state.current;
         state.guesses = 0;
         state.streak = state.questionStreak;
+        state.lives += 1;
+        state.score += Math.max(30, 110 + state.streak * 12 + state.seconds * 2);
+        state.streak += 1; state.correct += 1;
+        if (state.recent[0]?.entry === current && !state.recent[0].ok) {
+          state.recent[0].ok = true;
+          state.recent[0].reason = "Player marked answer right";
+        }
         setSelfMarkAvailable(false);
-        resolveQuestion({ ok: true, reason: "Player confirmed OCR error", recognized, rank: 0 });
+        els.skipButton.textContent = "Skip"; els.skipButton.disabled = true;
+        setFeedback(`Self-marked correct ${current.hanzi} · ${current.pinyin} · ${displayDefinition(current.definition)}`, "good");
+        render();
+        if (state.correct >= CAMPAIGN_QUESTIONS) { setTimeout(endGame, 950); return; }
+        setTimeout(() => { if (state.active) chooseQuestion(); }, 950);
       }
 
       function resolveQuestion({ ok, reason, recognized, rank = -1 }) {
@@ -882,20 +892,33 @@
         } else {
           state.lives -= 1; state.streak = 0;
           setFeedback(`${reason} · 答案是 ${current.hanzi} (${current.pinyin}) — ${displayDefinition(current.definition)}`, "bad");
+          setSelfMarkAvailable(true, recognized);
+          els.skipButton.textContent = "Continue"; els.skipButton.disabled = false;
         }
         state.recent.unshift({ entry: current, ok, recognized, reason, image: drawing.thumbnail() });
         state.recent = state.recent.slice(0, 5);
         render();
-        if (state.lives <= 0) { setTimeout(endGame, 950); return; }
+        if (!ok) return;
         if (state.correct >= CAMPAIGN_QUESTIONS) { setTimeout(endGame, 950); return; }
         setTimeout(() => { if (state.active) chooseQuestion(); }, 1450);
       }
 
-      function skipQuestion() { if (state.active && !state.resolving) resolveQuestion({ ok: false, reason: "跳过", recognized: "" }); }
+      function skipQuestion() {
+        if (!state.active) return;
+        if (state.resolving && state.selfMarkAvailable) {
+          setSelfMarkAvailable(false);
+          els.skipButton.textContent = "Skip"; els.skipButton.disabled = true;
+          if (state.lives <= 0) { endGame(); return; }
+          chooseQuestion();
+          return;
+        }
+        if (!state.resolving) resolveQuestion({ ok: false, reason: "跳过", recognized: "" });
+      }
       function endGame() {
         if (!state.active) return;
         clearInterval(state.timerId); state.active = false; state.resolving = false; setBestScore(state.score);
-        drawing.setEnabled(false); els.skipButton.disabled = true; els.startButton.textContent = "Start";
+        setSelfMarkAvailable(false);
+        drawing.setEnabled(false); els.skipButton.textContent = "Skip"; els.skipButton.disabled = true; els.startButton.textContent = "Start";
         const cleared = state.correct >= CAMPAIGN_QUESTIONS && state.lives > 0;
         els.gameOverTitle.textContent = cleared ? "Campaign clear!" : "Run over";
         els.gameOverCopy.textContent = `${modeConfig().label} · Score: ${state.score} · Correct: ${state.correct}/${state.answered}`;
