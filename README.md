@@ -4,7 +4,7 @@ A browser-based simplified Chinese character writing sprint.
 
 The game gives a pinyin and a concise Chinese definition from `word.json`. Round-parenthetical content is removed, clues are capped at 100 characters with `...`, and every occurrence of the answer glyph or its listed traditional form is shown as `~` until resolution. Draw the matching character on the canvas, then press **Check writing**. The completed ink is normalized into an image and recognized by PP-OCRv5; stroke order and stroke direction are not passed to the model.
 
-Undo, redo, clear, OCR candidates, six frequency levels, three campaign modes, lives, streaks, scoring, 60-second questions, and local best scores are included. The five most recent results retain small in-memory thumbnails of the player's writing; they are never uploaded or persisted.
+Undo, redo, clear, OCR candidates, seven frequency levels, campaign and Chengyu modes, lives, streaks, scoring, 60-second questions, post-round self-correction, and local best scores are included. The five most recent results and the game-over summary retain small in-memory thumbnails of the player's writing; they are never uploaded or persisted.
 
 ## Run locally
 
@@ -27,6 +27,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build_character_data
 ```
 
 The build intersects the CSV with `public/vendor/paddleocr/supported_characters.txt`, derived from PaddleOCR's official PP-OCRv5 dictionary. Characters absent from the model are excluded automatically.
+
+`chengyu.txt` is built separately into `public/chengyu_data.js`:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build_chengyu_data.ps1
+```
+
+The Chengyu build keeps each playable character once, prefers a randomly selected four-character expression when available, reads the character's pinyin from `word.json`, and masks every occurrence of the answer with `□`.
 
 Current generated source:
 
@@ -51,6 +59,7 @@ Only correct answers advance the campaign. A miss, timeout, or skip costs a life
 - Hard: levels 2, 3, 4, then a level 5 boss
 - Very hard: levels 3, 4, 5, then a level 6 boss
 - Extreme: levels 4, 5, 6, then a level 7 dictionary boss
+- Chengyu: 16 questions drawn from 4,361 unique OCR- and dictionary-supported characters
 
 Constant practice modes are also available for each individual level from 1 through 7; all 16 questions stay in the selected level.
 

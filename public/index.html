@@ -296,6 +296,7 @@
             <button type="button" data-mode="hard">Hard</button>
             <button type="button" data-mode="veryHard">Very hard</button>
             <button type="button" data-mode="extreme">Extreme</button>
+            <button type="button" data-mode="chengyu">Chengyu</button>
           </div>
           <button type="button" class="ghost" id="resetButton">Reset</button>
           <button type="button" class="primary" id="startButton">Start</button>
@@ -381,6 +382,7 @@
           <button type="button" class="difficulty-option" data-start-mode="hard" role="radio" aria-checked="false"><span class="difficulty-name">Hard · Levels 2–5</span><span class="difficulty-count" data-start-count="hard">5 + 5 + 5 + boss · 0 characters</span></button>
           <button type="button" class="difficulty-option" data-start-mode="veryHard" role="radio" aria-checked="false"><span class="difficulty-name">Very hard · Levels 3–6</span><span class="difficulty-count" data-start-count="veryHard">5 + 5 + 5 + boss · 0 characters</span></button>
           <button type="button" class="difficulty-option" data-start-mode="extreme" role="radio" aria-checked="false"><span class="difficulty-name">Extreme · Levels 4–7</span><span class="difficulty-count" data-start-count="extreme">5 + 5 + 5 + dictionary boss · 0 characters</span></button>
+          <button type="button" class="difficulty-option" data-start-mode="chengyu" role="radio" aria-checked="false"><span class="difficulty-name">Chengyu</span><span class="difficulty-count" data-start-count="chengyu">16 questions · 0 characters</span></button>
         </div>
         <div class="option-section-title">Constant level practice</div>
         <div class="difficulty-options" role="radiogroup" aria-label="Constant difficulty">
@@ -408,16 +410,21 @@
     </div>
 
     <script src="character_data.js"></script>
+    <script src="chengyu_data.js"></script>
     <script>
       const DATA = window.CHARACTER_DATA || { entries: [], meta: {} };
       const ALL_ENTRIES = DATA.entries || [];
       const LEVEL7_ENTRIES = DATA.level7Entries || [];
       const META = DATA.meta || {};
+      const CHENGYU_DATA = window.CHENGYU_DATA || { entries: [], meta: {} };
+      const CHENGYU_ENTRIES = CHENGYU_DATA.entries || [];
+      const CHENGYU_META = CHENGYU_DATA.meta || {};
       const MODE_CONFIGS = {
         normal: { label: "Normal", startLevel: 1 },
         hard: { label: "Hard", startLevel: 2 },
         veryHard: { label: "Very hard", startLevel: 3 },
         extreme: { label: "Extreme", startLevel: 4 },
+        chengyu: { label: "Chengyu", customDeck: CHENGYU_ENTRIES },
         level1: { label: "Level 1 practice", startLevel: 1, constantLevel: 1 },
         level2: { label: "Level 2 practice", startLevel: 2, constantLevel: 2 },
         level3: { label: "Level 3 practice", startLevel: 3, constantLevel: 3 },
@@ -432,9 +439,9 @@
       LEVEL_DECKS[7] = LEVEL7_ENTRIES;
       const DECKS = Object.fromEntries(Object.entries(MODE_CONFIGS).map(([mode, config]) => [
         mode,
-        [...new Map((config.constantLevel ? (LEVEL_DECKS[config.constantLevel] || []) : Array.from({ length: 4 }, (_, offset) => LEVEL_DECKS[config.startLevel + offset] || []).flat()).map((entry) => [entry.hanzi, entry])).values()],
+        [...new Map((config.customDeck || (config.constantLevel ? (LEVEL_DECKS[config.constantLevel] || []) : Array.from({ length: 4 }, (_, offset) => LEVEL_DECKS[config.startLevel + offset] || []).flat())).map((entry) => [entry.hanzi, entry])).values()],
       ]));
-      const PLAYABLE_CHARACTERS = new Set([...ALL_ENTRIES, ...LEVEL7_ENTRIES].map((entry) => entry.hanzi));
+      const PLAYABLE_CHARACTERS = new Set([...ALL_ENTRIES, ...LEVEL7_ENTRIES, ...CHENGYU_ENTRIES].map((entry) => entry.hanzi));
       const QUESTION_SECONDS = 60;
       const ACCEPTED_RANK = 5;
       const CAMPAIGN_QUESTIONS = 16;
@@ -468,13 +475,16 @@
       function modeConfig() { return MODE_CONFIGS[state.filter] || MODE_CONFIGS.normal; }
       function questionLevel(questionIndex = state.correct) {
         const config = modeConfig();
+        if (config.customDeck) return 0;
         if (config.constantLevel) return config.constantLevel;
         const stageOffset = questionIndex < 5 ? 0 : questionIndex < 10 ? 1 : questionIndex < 15 ? 2 : 3;
         return config.startLevel + stageOffset;
       }
       function isBossQuestion(questionIndex = state.correct) { return questionIndex === CAMPAIGN_QUESTIONS - 1; }
       function displayDefinition(value) { return value.replace(/\//g, " · "); }
+      function entryLevelLabel(entry) { return entry.levelLabel === "Chengyu" ? "Chengyu" : `Level ${entry.level}`; }
       function clueDefinition(value, entry) {
+        if (entry.clue) return entry.clue;
         let clue = displayDefinition(value).replace(/\s+/g, " ").trim();
         const redactions = new Set([entry.hanzi, ...String(entry.traditional || "")]);
         redactions.delete("");
@@ -507,6 +517,10 @@
         });
         els.startModeCounts.forEach((count) => {
           const config = MODE_CONFIGS[count.dataset.startCount];
+          if (config?.customDeck) {
+            count.textContent = `16 questions · ${modeCount(count.dataset.startCount).toLocaleString("en-US")} characters`;
+            return;
+          }
           if (config?.constantLevel) {
             count.textContent = `16 questions · ${modeCount(count.dataset.startCount).toLocaleString("en-US")} characters`;
             return;
@@ -798,7 +812,7 @@
 
       function chooseQuestion() {
         const level = questionLevel();
-        const pool = LEVEL_DECKS[level] || [];
+        const pool = modeConfig().customDeck ? deck() : (LEVEL_DECKS[level] || []);
         const fresh = pool.filter((entry) => !state.lastCharacters.includes(entry.hanzi));
         const choices = fresh.length ? fresh : pool;
         const source = choices[Math.floor(Math.random() * choices.length)];
@@ -817,9 +831,13 @@
         if (!entry) return;
         const boss = isBossQuestion();
         els.questionLabel.classList.toggle("boss", boss);
-        els.questionLabel.textContent = boss
-          ? `Final boss · Level ${entry.level} · 16/16`
-          : `${modeConfig().label} · Level ${entry.level} · ${state.correct + 1}/16`;
+        if (modeConfig().customDeck) {
+          els.questionLabel.textContent = `Chengyu · ${state.correct + 1}/16`;
+        } else {
+          els.questionLabel.textContent = boss
+            ? `Final boss · Level ${entry.level} · 16/16`
+            : `${modeConfig().label} · Level ${entry.level} · ${state.correct + 1}/16`;
+        }
         els.pinyinPrompt.textContent = entry.pinyin;
         els.definitionPrompt.textContent = clueDefinition(entry.definition, entry);
       }
@@ -958,7 +976,7 @@
               <div class="recent-writing">${item.image ? `<img src="${escapeHtml(item.image)}" alt="Player writing for question ${index + 1}">` : "—"}</div>
               <div class="recent-hanzi" title="Answer">${escapeHtml(item.entry.hanzi)}</div>
               <div class="summary-details">
-                <div class="summary-question">${escapeHtml(item.entry.pinyin)} · Level ${item.entry.level}</div>
+                <div class="summary-question">${escapeHtml(item.entry.pinyin)} · ${escapeHtml(entryLevelLabel(item.entry))}</div>
                 <div class="summary-clue" title="${escapeHtml(displayDefinition(item.entry.definition))}">${escapeHtml(displayDefinition(item.entry.definition))}</div>
                 <div class="summary-reason">${escapeHtml(outcome + ocrDetail)}</div>
               </div>
@@ -974,7 +992,7 @@
           <div class="recent-row">
             <div class="recent-writing">${item.image ? `<img src="${escapeHtml(item.image)}" alt="Player writing for ${escapeHtml(item.entry.hanzi)}">` : "—"}</div>
             <div class="recent-hanzi">${escapeHtml(item.entry.hanzi)}</div>
-            <div class="recent-main"><div class="recent-answer">${escapeHtml(item.entry.pinyin)} · Level ${item.entry.level}</div><div class="recent-meta">${escapeHtml(displayDefinition(item.entry.definition))}</div></div>
+            <div class="recent-main"><div class="recent-answer">${escapeHtml(item.entry.pinyin)} · ${escapeHtml(entryLevelLabel(item.entry))}</div><div class="recent-meta">${escapeHtml(displayDefinition(item.entry.definition))}</div></div>
             <div class="recent-mark ${item.ok ? "ok" : "no"}">${item.ok ? "✓" : "×"}</div>
           </div>`).join("");
       }
@@ -983,7 +1001,8 @@
         els.timer.textContent = state.seconds; els.score.textContent = state.score; els.streak.textContent = state.streak;
         els.lives.textContent = "●".repeat(state.lives) || "0"; els.bestScore.textContent = getBestScore();
         els.sourceCount.textContent = modeCount(state.filter).toLocaleString("en-US");
-        els.filterCount.textContent = `${META.rejectedRows || 0} excluded`;
+        const rejectedCount = state.filter === "chengyu" ? CHENGYU_META.rejectedCharacters : META.rejectedRows;
+        els.filterCount.textContent = `${rejectedCount || 0} excluded`;
         els.route.style.setProperty("--train-x", `${Math.min(100, Math.round((state.correct / CAMPAIGN_QUESTIONS) * 100))}%`);
         renderRecent(); syncDifficultyControls();
       }
