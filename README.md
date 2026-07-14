@@ -52,6 +52,8 @@ Only correct answers advance the campaign. A miss, timeout, or skip costs a life
 - Very hard: levels 3, 4, 5, then a level 6 boss
 - Extreme: levels 4, 5, 6, then a level 7 dictionary boss
 
+Constant practice modes are also available for each individual level from 1 through 7; all 16 questions stay in the selected level.
+
 ## Handwriting recognition
 
 The game uses the official PP-OCRv5 mobile recognition model from [`PaddlePaddle/PaddleOCR`](https://github.com/PaddlePaddle/PaddleOCR). Its dictionary contains 15,700 unique Han characters, covering all 11,059 Level 7 dictionary characters.
