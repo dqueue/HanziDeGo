@@ -186,7 +186,7 @@
       .candidate::before { content: attr(data-rank); position: absolute; top: 2px; left: 4px; color: #77807d; font-family: system-ui, sans-serif; font-size: 9px; font-weight: 800; line-height: 1; }
       .candidate:first-child { border-color: var(--jade); background: #eaf5f2; }
       .candidate-placeholder { color: #a7aeab; font-size: 13px; font-weight: 700; }
-      .answer-actions { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+      .answer-actions { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; }
       .feedback { min-height: 44px; padding: 11px 13px; border: 1px solid var(--line); background: #fff; color: var(--muted); font-weight: 700; line-height: 1.4; }
       .feedback.good { border-color: #8ed0c4; background: #ecf8f5; color: var(--jade-dark); }
       .feedback.warn { border-color: #ead083; background: #fff8df; color: #756018; }
@@ -329,6 +329,7 @@
             </div>
             <div class="answer-actions">
               <button type="button" class="secondary" id="checkButton" disabled>Check writing</button>
+              <button type="button" class="ghost" id="selfMarkButton" hidden disabled>Mark my answer right</button>
               <button type="button" class="ghost" id="skipButton" disabled>Skip</button>
             </div>
             <div class="feedback" id="feedback" aria-live="polite">正在准备识别器…</div>
@@ -427,7 +428,8 @@
       const state = {
         active: false, recognizerReady: false, recognizerError: false, current: null,
         filter: "normal", score: 0, streak: 0, lives: 5, seconds: QUESTION_SECONDS,
-        correct: 0, answered: 0, guesses: 0, resolving: false, recent: [], lastCharacters: [], timerId: null,
+        correct: 0, answered: 0, guesses: 0, resolving: false, questionStreak: 0, selfMarkAvailable: false,
+        pendingRecognized: "", recent: [], lastCharacters: [], timerId: null,
       };
 
       const els = Object.fromEntries([
@@ -435,7 +437,7 @@
         "score", "streak", "lives", "bestScore", "sourceCount", "filterCount", "recentList", "difficultyOverlay",
         "difficultyStatus", "launchStartButton", "gameOverOverlay", "gameOverTitle", "gameOverCopy", "closeOverlayButton", "playAgainButton",
         "pinyinPrompt", "definitionPrompt", "writingBoard", "boardWrap", "boardLoading", "undoButton", "redoButton",
-        "clearButton", "candidates", "recognizerStatus",
+        "clearButton", "candidates", "recognizerStatus", "selfMarkButton",
       ].map((id) => [id, document.getElementById(id)]));
       els.modeButtons = [...document.querySelectorAll("[data-mode]")];
       els.startModeButtons = [...document.querySelectorAll("[data-start-mode]")];
@@ -469,6 +471,13 @@
       function setFeedback(message, mood = "") {
         els.feedback.className = `feedback${mood ? ` ${mood}` : ""}`;
         els.feedback.textContent = message;
+      }
+
+      function setSelfMarkAvailable(available, recognized = "") {
+        state.selfMarkAvailable = available;
+        state.pendingRecognized = available ? recognized : "";
+        els.selfMarkButton.hidden = !available;
+        els.selfMarkButton.disabled = !available;
       }
 
       function syncDifficultyControls() {
@@ -626,6 +635,7 @@
 
         async function recognize() {
           if (!ocr || !state.recognizerReady || strokes.length === 0 || recognizing) return false;
+          setSelfMarkAvailable(false);
           recognizing = true; syncButtons();
           setFeedback("OCR is reading the finished character…");
           try {
@@ -709,6 +719,7 @@
           els.candidates.innerHTML = matches.map((match, index) => `<span class="candidate" data-rank="${index + 1}" title="Whole-character alternative ${index + 1}; score ${Number(match.score).toFixed(3)}" aria-label="Alternative ${index + 1}: ${escapeHtml(match.hanzi)}">${escapeHtml(match.hanzi)}</span>`).join("");
         }
         function resetOcrResult() {
+          setSelfMarkAvailable(false);
           els.candidates.innerHTML = '<span class="candidate-placeholder">Finish the character, then press Check writing.</span>';
         }
         function syncButtons() {
@@ -782,6 +793,7 @@
         if (!source) { endGame(); return; }
         state.lastCharacters = [source.hanzi, ...state.lastCharacters].slice(0, 18);
         state.seconds = QUESTION_SECONDS; state.guesses = 0; state.resolving = false; state.current = source;
+        state.questionStreak = state.streak;
         drawing.clear(); drawing.setEnabled(true);
         els.skipButton.disabled = false;
         renderQuestion(); render();
@@ -842,19 +854,31 @@
         }
         state.guesses += 1; state.streak = 0;
         const seen = matches.map((match) => match.hanzi).join("、") || "没有匹配";
-        setFeedback(`Not yet — top whole-character alternatives: ${seen}. Adjust the finished shape and try again.`, "warn");
+        setSelfMarkAvailable(true, matches[0]?.hanzi || "");
+        setFeedback(`OCR marked this wrong — top whole-character alternatives: ${seen}. Try again, or mark your answer right if the OCR misread it.`, "warn");
         render();
+      }
+
+      function selfMarkCorrect() {
+        if (!state.active || !state.current || state.resolving || !state.selfMarkAvailable) return;
+        const recognized = state.pendingRecognized;
+        state.guesses = 0;
+        state.streak = state.questionStreak;
+        setSelfMarkAvailable(false);
+        resolveQuestion({ ok: true, reason: "Player confirmed OCR error", recognized, rank: 0 });
       }
 
       function resolveQuestion({ ok, reason, recognized, rank = -1 }) {
         if (!state.current || state.resolving) return;
         const current = state.current;
+        setSelfMarkAvailable(false);
         state.resolving = true; state.answered += 1; drawing.setEnabled(false); els.skipButton.disabled = true;
         if (ok) {
           const missPenalty = state.guesses * 18;
           state.score += Math.max(30, 110 + state.streak * 12 + state.seconds * 2 - rank * 8 - missPenalty);
           state.streak += 1; state.correct += 1;
-          setFeedback(`正确！${current.hanzi} · ${current.pinyin} · ${displayDefinition(current.definition)}`, "good");
+          const confirmation = reason === "Player confirmed OCR error" ? "Self-marked correct" : "正确！";
+          setFeedback(`${confirmation} ${current.hanzi} · ${current.pinyin} · ${displayDefinition(current.definition)}`, "good");
         } else {
           state.lives -= 1; state.streak = 0;
           setFeedback(`${reason} · 答案是 ${current.hanzi} (${current.pinyin}) — ${displayDefinition(current.definition)}`, "bad");
@@ -903,6 +927,7 @@
       els.resetButton.addEventListener("click", () => resetGame({ showChooser: true }));
       els.skipButton.addEventListener("click", skipQuestion);
       els.checkButton.addEventListener("click", checkWriting);
+      els.selfMarkButton.addEventListener("click", selfMarkCorrect);
       els.undoButton.addEventListener("click", drawing.undo);
       els.redoButton.addEventListener("click", drawing.redo);
       els.clearButton.addEventListener("click", drawing.clear);
