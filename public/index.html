@@ -223,9 +223,18 @@
       .launch-overlay { background: rgba(244,241,232,.93); }
       .modal { width: calc(100vw - 44px); max-width: 460px; padding: 24px; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
       .launch-modal { max-width: 620px; max-height: calc(100vh - 44px); overflow-y: auto; }
+      .summary-modal { max-width: 760px; max-height: calc(100vh - 44px); display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; }
       .launch-kicker { margin: 0 0 7px; color: var(--jade-dark); font-size: 11px; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
       .modal h2 { margin: 0 0 10px; font-size: 28px; }
       .modal p { margin: 0 0 17px; color: var(--muted); line-height: 1.5; }
+      .game-summary { min-height: 0; margin-bottom: 18px; overflow-y: auto; border: 1px solid var(--line); }
+      .summary-row { display: grid; grid-template-columns: 32px 48px 48px minmax(0, 1fr) 32px; align-items: center; gap: 9px; padding: 10px 12px; border-bottom: 1px solid #eef1ef; }
+      .summary-row:last-child { border-bottom: 0; }
+      .summary-number { color: var(--muted); font-size: 12px; font-weight: 900; text-align: center; }
+      .summary-details { min-width: 0; }
+      .summary-question { font-size: 13px; font-weight: 900; }
+      .summary-clue, .summary-reason { overflow: hidden; color: var(--muted); font-size: 11px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+      .summary-reason { color: var(--ink); }
       .difficulty-options { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin: 12px 0 20px; }
       .difficulty-option { min-height: 84px; display: grid; gap: 5px; justify-items: start; padding: 13px; color: var(--ink); background: #fff; border: 2px solid var(--line); border-radius: 6px; text-align: left; }
       .difficulty-option.active { border-color: var(--jade); box-shadow: 0 0 0 4px rgba(8,123,108,.13); }
@@ -264,6 +273,10 @@
         .answer-actions { grid-template-columns: 1fr; }
         .answer-actions button { width: 100%; }
         .difficulty-options { grid-template-columns: 1fr; }
+        .summary-modal { padding: 17px; }
+        .summary-row { grid-template-columns: 26px 42px 42px minmax(0, 1fr) 28px; gap: 6px; padding: 9px 7px; }
+        .summary-row .recent-writing { width: 40px; height: 40px; }
+        .summary-row .recent-hanzi { width: 38px; height: 38px; }
       }
     </style>
   </head>
@@ -383,9 +396,10 @@
     </div>
 
     <div class="overlays" id="gameOverOverlay" role="dialog" aria-modal="true" aria-labelledby="gameOverTitle">
-      <div class="modal">
+      <div class="modal summary-modal">
         <h2 id="gameOverTitle">本轮结束</h2>
         <p id="gameOverCopy">Score: 0</p>
+        <div class="game-summary" id="gameSummary" aria-label="Every question and answer"></div>
         <div class="modal-actions">
           <button type="button" class="ghost" id="closeOverlayButton">Close</button>
           <button type="button" class="primary" id="playAgainButton">Play again</button>
@@ -429,13 +443,13 @@
         active: false, recognizerReady: false, recognizerError: false, current: null,
         filter: "normal", score: 0, streak: 0, lives: 5, seconds: QUESTION_SECONDS,
         correct: 0, answered: 0, guesses: 0, resolving: false, questionStreak: 0, selfMarkAvailable: false,
-        pendingRecognized: "", recent: [], lastCharacters: [], timerId: null,
+        pendingRecognized: "", recent: [], history: [], lastCharacters: [], timerId: null,
       };
 
       const els = Object.fromEntries([
         "route", "startButton", "resetButton", "skipButton", "checkButton", "feedback", "questionLabel", "timer",
         "score", "streak", "lives", "bestScore", "sourceCount", "filterCount", "recentList", "difficultyOverlay",
-        "difficultyStatus", "launchStartButton", "gameOverOverlay", "gameOverTitle", "gameOverCopy", "closeOverlayButton", "playAgainButton",
+        "difficultyStatus", "launchStartButton", "gameOverOverlay", "gameOverTitle", "gameOverCopy", "gameSummary", "closeOverlayButton", "playAgainButton",
         "pinyinPrompt", "definitionPrompt", "writingBoard", "boardWrap", "boardLoading", "undoButton", "redoButton",
         "clearButton", "candidates", "recognizerStatus", "selfMarkButton",
       ].map((id) => [id, document.getElementById(id)]));
@@ -813,7 +827,7 @@
       function startGame() {
         if (!state.recognizerReady || modeCount(state.filter) === 0) return;
         clearInterval(state.timerId);
-        Object.assign(state, { active: true, current: null, score: 0, streak: 0, lives: 5, seconds: QUESTION_SECONDS, correct: 0, answered: 0, guesses: 0, resolving: false, recent: [], lastCharacters: [] });
+        Object.assign(state, { active: true, current: null, score: 0, streak: 0, lives: 5, seconds: QUESTION_SECONDS, correct: 0, answered: 0, guesses: 0, resolving: false, recent: [], history: [], lastCharacters: [] });
         hideDifficultyOverlay(); els.gameOverOverlay.classList.remove("show"); els.startButton.textContent = "Restart";
         setFeedback("Write the character that matches the clue.");
         chooseQuestion(); state.timerId = setInterval(tick, 1000);
@@ -821,7 +835,7 @@
 
       function resetGame({ showChooser = false } = {}) {
         clearInterval(state.timerId);
-        Object.assign(state, { active: false, current: null, score: 0, streak: 0, lives: 5, seconds: QUESTION_SECONDS, correct: 0, answered: 0, guesses: 0, resolving: false, recent: [], lastCharacters: [] });
+        Object.assign(state, { active: false, current: null, score: 0, streak: 0, lives: 5, seconds: QUESTION_SECONDS, correct: 0, answered: 0, guesses: 0, resolving: false, recent: [], history: [], lastCharacters: [] });
         setSelfMarkAvailable(false);
         drawing.clear(); drawing.setEnabled(false); els.skipButton.textContent = "Skip"; els.skipButton.disabled = true; els.startButton.textContent = "Start";
         els.questionLabel.classList.remove("boss"); els.questionLabel.textContent = "准备中"; els.pinyinPrompt.textContent = "pīnyīn";
@@ -895,7 +909,9 @@
           setSelfMarkAvailable(true, recognized);
           els.skipButton.textContent = "Continue"; els.skipButton.disabled = false;
         }
-        state.recent.unshift({ entry: current, ok, recognized, reason, image: drawing.thumbnail() });
+        const result = { entry: current, ok, recognized, reason, image: drawing.thumbnail() };
+        state.history.push(result);
+        state.recent.unshift(result);
         state.recent = state.recent.slice(0, 5);
         render();
         if (!ok) return;
@@ -922,7 +938,34 @@
         const cleared = state.correct >= CAMPAIGN_QUESTIONS && state.lives > 0;
         els.gameOverTitle.textContent = cleared ? "Campaign clear!" : "Run over";
         els.gameOverCopy.textContent = `${modeConfig().label} · Score: ${state.score} · Correct: ${state.correct}/${state.answered}`;
+        renderGameSummary();
         els.gameOverOverlay.classList.add("show"); render();
+      }
+
+      function renderGameSummary() {
+        if (!state.history.length) {
+          els.gameSummary.innerHTML = '<div class="empty-recent">No answered questions in this run.</div>';
+          return;
+        }
+        els.gameSummary.innerHTML = state.history.map((item, index) => {
+          const ocrDetail = item.recognized && item.recognized !== item.entry.hanzi ? ` · OCR read ${item.recognized}` : "";
+          const outcome = item.ok
+            ? (item.reason === "Player marked answer right" ? "Marked right by player" : "Correct")
+            : `Wrong · ${item.reason}`;
+          return `
+            <div class="summary-row">
+              <div class="summary-number">${index + 1}</div>
+              <div class="recent-writing">${item.image ? `<img src="${escapeHtml(item.image)}" alt="Player writing for question ${index + 1}">` : "—"}</div>
+              <div class="recent-hanzi" title="Answer">${escapeHtml(item.entry.hanzi)}</div>
+              <div class="summary-details">
+                <div class="summary-question">${escapeHtml(item.entry.pinyin)} · Level ${item.entry.level}</div>
+                <div class="summary-clue" title="${escapeHtml(displayDefinition(item.entry.definition))}">${escapeHtml(displayDefinition(item.entry.definition))}</div>
+                <div class="summary-reason">${escapeHtml(outcome + ocrDetail)}</div>
+              </div>
+              <div class="recent-mark ${item.ok ? "ok" : "no"}" aria-label="${item.ok ? "Correct" : "Wrong"}">${item.ok ? "✓" : "×"}</div>
+            </div>`;
+        }).join("");
+        els.gameSummary.scrollTop = 0;
       }
 
       function renderRecent() {
