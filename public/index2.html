@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Identify Chinese calligraphy and type its pinyin with the correct tone." />
+    <title>Hanzi De Go · 认读挑战</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #17211f;
+        --muted: #66716e;
+        --paper: #f4f1e8;
+        --panel: #fffdf8;
+        --line: #d8d7cf;
+        --jade: #087b6c;
+        --jade-dark: #055f55;
+        --red: #d9472f;
+        --gold: #e4b63e;
+        --sky: #cfe7ee;
+        --shadow: 0 18px 48px rgba(23, 33, 31, 0.13);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 8% 0%, rgba(228, 182, 62, 0.16), transparent 28rem),
+          linear-gradient(180deg, rgba(207, 231, 238, 0.82), rgba(244, 241, 232, 0.92) 36rem),
+          var(--paper);
+      }
+      button, input { font: inherit; }
+      button { border: 0; cursor: pointer; }
+      button:disabled, input:disabled { cursor: not-allowed; opacity: 0.52; }
+      .app { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 20px 32px 12px;
+      }
+      .brand { display: flex; align-items: center; gap: 12px; }
+      .brand-mark {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        background: var(--jade);
+        color: #fff;
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 8px 22px rgba(8, 123, 108, 0.25);
+        font-family: "KaiTi", "STKaiti", serif;
+        font-size: 27px;
+        font-weight: 900;
+      }
+      h1 { margin: 0; font-size: 27px; line-height: 1; }
+      .subtitle { margin-top: 5px; color: var(--muted); font-size: 13px; }
+      .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+      .segmented {
+        display: grid;
+        grid-auto-flow: column;
+        gap: 4px;
+        padding: 4px;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid var(--line);
+      }
+      .segmented button {
+        min-width: 54px;
+        height: 34px;
+        padding: 0 10px;
+        background: transparent;
+        color: var(--muted);
+        border-radius: 4px;
+        font-weight: 850;
+      }
+      .segmented button.active { background: var(--ink); color: #fff; }
+      .primary, .secondary, .ghost {
+        min-height: 42px;
+        padding: 0 16px;
+        border-radius: 6px;
+        font-weight: 850;
+      }
+      .primary { background: var(--red); color: #fff; box-shadow: 0 10px 22px rgba(217, 71, 47, 0.2); }
+      .secondary { background: var(--jade); color: #fff; }
+      .ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+      .text-link { color: var(--jade-dark); font-size: 13px; font-weight: 850; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+      .game-shell {
+        width: min(1220px, 100%);
+        margin: 0 auto;
+        padding: 14px 32px 34px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 318px;
+        gap: 22px;
+        align-items: start;
+      }
+      .route {
+        grid-column: 1 / -1;
+        min-height: 120px;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(255,255,255,.55), transparent), var(--sky);
+        border: 1px solid #b7d2d9;
+        box-shadow: var(--shadow);
+      }
+      .route::before {
+        content: "";
+        position: absolute;
+        inset: auto 0 32px;
+        height: 65px;
+        opacity: .55;
+        background:
+          linear-gradient(135deg, transparent 0 34%, rgba(8,123,108,.28) 34% 64%, transparent 64%) 0 0 / 180px 70px,
+          linear-gradient(225deg, transparent 0 38%, rgba(23,33,31,.18) 38% 68%, transparent 68%) 60px 8px / 210px 66px;
+      }
+      .route-sun {
+        position: absolute; right: 42px; top: 18px; width: 44px; height: 44px;
+        background: var(--gold); border-radius: 50%; box-shadow: 0 0 0 11px rgba(228,182,62,.18);
+      }
+      .track, .track-fill {
+        position: absolute; left: 26px; bottom: 27px; height: 9px; border-radius: 999px;
+      }
+      .track { right: 26px; background: repeating-linear-gradient(90deg, #303735 0 30px, #68706e 30px 36px); }
+      .track-fill { width: var(--train-x, 0%); max-width: calc(100% - 52px); background: var(--gold); transition: width 280ms ease; }
+      .train {
+        position: absolute;
+        left: clamp(68px, calc(26px + var(--train-x, 0%)), calc(100% - 68px));
+        bottom: 40px;
+        width: 132px;
+        height: 42px;
+        transform: translateX(-50%);
+        transition: left 280ms ease;
+      }
+      .train-body { position: absolute; inset: 7px 0; background: #fff; border: 3px solid var(--ink); border-radius: 22px 8px 8px 22px; overflow: hidden; }
+      .train-body::before { content: ""; position: absolute; inset: 18px 0 0; background: var(--red); }
+      .train-body::after { content: "读"; position: absolute; left: 20px; top: 0; color: var(--jade); font-weight: 950; font-size: 16px; }
+      .wheel { position: absolute; bottom: 0; width: 17px; height: 17px; border: 4px solid var(--ink); border-radius: 50%; background: #fff; }
+      .wheel.one { left: 27px; }
+      .wheel.two { right: 23px; }
+      .station-labels { position: absolute; left: 26px; right: 26px; bottom: 4px; display: grid; grid-template-columns: repeat(5, 1fr); font-size: 11px; font-weight: 850; }
+      .station-labels span:last-child { text-align: right; }
+
+      .stage, .side { background: rgba(255, 253, 248, 0.95); border: 1px solid var(--line); box-shadow: var(--shadow); }
+      .stage { min-height: 690px; display: grid; grid-template-rows: auto auto 1fr auto; }
+      .question-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+      .pill {
+        display: inline-flex; align-items: center; justify-content: center; min-width: 130px; height: 32px; padding: 0 12px;
+        background: #eaf5f2; color: var(--jade-dark); border: 1px solid #b9dbd3; font-size: 12px; font-weight: 900; text-transform: uppercase;
+      }
+      .timer { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 76px; height: 38px; padding: 0 12px; background: var(--ink); color: #fff; font-weight: 900; font-size: 18px; }
+      .timer::before { content: "◷"; font-size: 15px; color: var(--gold); }
+      .timer.low { background: var(--red); }
+
+      .prompt-card { padding: 17px 24px 15px; display: grid; gap: 9px; text-align: center; border-bottom: 1px solid var(--line); }
+      .prompt-eyebrow { color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+      .script-meta { display: flex; justify-content: center; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+      .script-style { color: var(--red); font-family: "KaiTi", "STKaiti", serif; font-size: 30px; font-weight: 950; }
+      .script-author { color: var(--ink); font-size: 16px; font-weight: 850; }
+      .script-collection { color: var(--muted); font-size: 12px; font-weight: 800; }
+
+      .character-zone { display: grid; place-items: center; padding: 18px; }
+      .image-frame {
+        position: relative;
+        width: min(390px, 68vw);
+        aspect-ratio: 1;
+        padding: 13px;
+        background: #fff;
+        border: 4px solid var(--ink);
+        box-shadow: 10px 10px 0 rgba(8,123,108,.15);
+      }
+      .image-frame::before, .image-frame::after { content: ""; position: absolute; pointer-events: none; opacity: .34; }
+      .image-frame::before { inset: 13px 50%; border-left: 1px dashed var(--red); }
+      .image-frame::after { inset: 50% 13px; border-top: 1px dashed var(--red); }
+      .character-image { width: 100%; height: 100%; display: block; object-fit: contain; filter: contrast(1.04); }
+      .image-loading { position: absolute; inset: 13px; display: none; place-items: center; background: #faf9f5; color: var(--muted); font-weight: 850; }
+      .image-frame.loading .image-loading { display: grid; }
+
+      .answer-panel { display: grid; gap: 10px; padding: 0 18px 18px; }
+      .answer-label { color: var(--muted); font-size: 12px; font-weight: 850; }
+      .answer-form { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; }
+      .answer-input {
+        width: 100%; min-height: 48px; padding: 0 14px; color: var(--ink); background: #fff;
+        border: 2px solid var(--line); border-radius: 6px; outline: 0; font-size: 19px; font-weight: 800;
+      }
+      .answer-input:focus { border-color: var(--jade); box-shadow: 0 0 0 3px rgba(8,123,108,.12); }
+      .feedback { min-height: 46px; padding: 11px 13px; border: 1px solid var(--line); background: #fff; color: var(--muted); font-weight: 700; line-height: 1.45; }
+      .feedback.good { border-color: #8ed0c4; background: #ecf8f5; color: var(--jade-dark); }
+      .feedback.warn { border-color: #ead083; background: #fff8df; color: #756018; }
+      .feedback.bad { border-color: #e4a4a4; background: #fff0f0; color: #8f2828; }
+
+      .side { display: grid; gap: 1px; overflow: hidden; }
+      .score-grid { display: grid; grid-template-columns: repeat(2, 1fr); background: var(--line); gap: 1px; }
+      .metric { min-height: 90px; padding: 14px; background: #fff; }
+      .metric-label { color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+      .metric-value { margin-top: 8px; font-size: 31px; line-height: 1; font-weight: 950; }
+      .metric-value.small { font-size: 22px; }
+      .source-panel, .list-panel { padding: 17px; background: #fff; }
+      .source-line { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid #eef1ef; color: var(--muted); font-size: 12px; font-weight: 800; }
+      .source-line:last-child { border-bottom: 0; }
+      .source-line strong { color: var(--ink); text-align: right; }
+      .status-dot { display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 50%; background: var(--jade); }
+      .list-title { margin: 0 0 10px; color: var(--muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+      .recent { display: grid; gap: 7px; min-height: 170px; }
+      .recent-row { display: grid; grid-template-columns: 48px 38px minmax(0,1fr) auto; align-items: center; gap: 7px; padding: 8px 0; border-bottom: 1px solid #eef1ef; }
+      .recent-image { width: 46px; height: 46px; display: block; object-fit: cover; background: #fffdf8; border: 1px solid var(--line); }
+      .recent-hanzi { width: 36px; height: 36px; display: grid; place-items: center; background: #f5f3ec; font-family: "KaiTi", "STKaiti", serif; font-size: 25px; font-weight: 900; }
+      .recent-main { min-width: 0; }
+      .recent-answer { font-size: 13px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .recent-meta { color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .recent-mark { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; color: #fff; font-weight: 950; }
+      .recent-mark.ok { background: var(--jade); }
+      .recent-mark.no { background: var(--red); }
+      .empty-recent { display: grid; place-items: center; min-height: 145px; color: var(--muted); border: 1px dashed var(--line); font-size: 13px; font-weight: 750; text-align: center; padding: 14px; }
+
+      .overlays { position: fixed; inset: 0; z-index: 20; display: none; place-items: center; padding: 22px; background: rgba(23,33,31,.7); backdrop-filter: blur(4px); }
+      .overlays.show { display: grid; }
+      .modal { width: min(620px, 100%); max-height: min(760px, calc(100vh - 44px)); overflow: auto; padding: 25px; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 24px 70px rgba(0,0,0,.25); }
+      .modal h2 { margin: 0; font-size: 28px; }
+      .modal-copy { margin: 8px 0 20px; color: var(--muted); line-height: 1.55; }
+      .option-section-title { margin: 16px 0 8px; color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+      .difficulty-options { display: grid; gap: 8px; }
+      .difficulty-option { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; min-height: 54px; padding: 10px 13px; text-align: left; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 5px; }
+      .difficulty-option.active { border-color: var(--jade); background: #eaf5f2; box-shadow: inset 4px 0 var(--jade); }
+      .difficulty-name { font-weight: 900; }
+      .difficulty-count { color: var(--muted); font-size: 12px; font-weight: 750; }
+      .tone-note { margin-top: 15px; padding: 12px; background: #fff8df; border: 1px solid #ead083; color: #756018; font-size: 13px; line-height: 1.5; }
+      .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+      .game-summary { display: grid; gap: 8px; margin-top: 17px; }
+      .summary-row { display: grid; grid-template-columns: 54px 43px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 8px; background: #fff; border: 1px solid var(--line); }
+      .summary-row img { width: 52px; height: 52px; object-fit: cover; }
+      .summary-hanzi { font-family: "KaiTi", "STKaiti", serif; font-size: 31px; font-weight: 900; }
+      .summary-main { min-width: 0; }
+      .summary-answer { font-weight: 900; }
+      .summary-meta { color: var(--muted); font-size: 11px; }
+
+      @media (max-width: 900px) {
+        .topbar { align-items: flex-start; padding: 16px 18px 8px; }
+        .controls { max-width: 370px; }
+        .segmented { display: none; }
+        .game-shell { grid-template-columns: 1fr; padding: 10px 18px 28px; }
+        .route { grid-column: auto; }
+        .side { grid-row: 3; }
+        .stage { min-height: 0; }
+      }
+      @media (max-width: 560px) {
+        h1 { font-size: 22px; }
+        .subtitle { display: none; }
+        .topbar { gap: 12px; }
+        .brand-mark { width: 40px; height: 40px; }
+        .controls .text-link { display: none; }
+        .game-shell { padding-inline: 10px; }
+        .route { min-height: 105px; }
+        .answer-form { grid-template-columns: 1fr 1fr; }
+        .answer-input { grid-column: 1 / -1; }
+        .answer-form button { width: 100%; }
+        .prompt-card { padding-inline: 14px; }
+        .character-zone { padding: 14px; }
+        .image-frame { width: min(330px, 82vw); }
+        .summary-row { grid-template-columns: 48px 38px minmax(0,1fr) auto; padding: 6px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">读</div>
+          <div>
+            <h1>Hanzi De Go</h1>
+            <div class="subtitle">认读挑战 · Calligraphy reading sprint</div>
+          </div>
+        </div>
+        <div class="controls">
+          <a class="text-link" href="index.html">Writing game</a>
+          <div class="segmented" aria-label="Script filter">
+            <button type="button" class="active" data-mode="all">混合</button>
+            <button type="button" data-mode="行">行</button>
+            <button type="button" data-mode="草">草</button>
+            <button type="button" data-mode="隶">隶</button>
+            <button type="button" data-mode="篆">篆</button>
+          </div>
+          <button type="button" class="ghost" id="resetButton">Choose script</button>
+          <button type="button" class="primary" id="startButton">Start</button>
+        </div>
+      </header>
+
+      <main class="game-shell">
+        <section class="route" id="route" aria-label="Round progress">
+          <div class="route-sun"></div>
+          <div class="track"></div>
+          <div class="track-fill"></div>
+          <div class="train" aria-hidden="true">
+            <div class="train-body"></div>
+            <div class="wheel one"></div>
+            <div class="wheel two"></div>
+          </div>
+          <div class="station-labels"><span>Start</span><span>4</span><span>8</span><span>12</span><span>Finish</span></div>
+        </section>
+
+        <section class="stage" aria-label="Reading question">
+          <div class="question-head">
+            <div class="pill" id="questionLabel">Choose a script</div>
+            <div class="timer" id="timer" aria-label="Time remaining">60</div>
+          </div>
+
+          <div class="prompt-card">
+            <div class="prompt-eyebrow">Script and calligrapher</div>
+            <div class="script-meta">
+              <span class="script-style" id="scriptStyle">书体</span>
+              <span class="script-author" id="scriptAuthor">作者</span>
+              <span class="script-collection" id="scriptCollection"></span>
+            </div>
+          </div>
+
+          <div class="character-zone">
+            <div class="image-frame loading" id="imageFrame">
+              <img class="character-image" id="characterImage" alt="Calligraphy sample to identify" />
+              <div class="image-loading">Preparing the next character…</div>
+            </div>
+          </div>
+
+          <div class="answer-panel">
+            <label class="answer-label" for="answerInput">Type the pinyin with its tone mark or tone number.</label>
+            <form class="answer-form" id="answerForm">
+              <input class="answer-input" id="answerInput" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="hàn or han4" disabled />
+              <button type="button" class="ghost" id="skipButton" disabled>Skip</button>
+              <button type="submit" class="secondary" id="submitButton" disabled>Check</button>
+              <button type="button" class="primary" id="nextButton" hidden>Next</button>
+            </form>
+            <div class="feedback" id="feedback" role="status" aria-live="polite">Choose a script to begin a 16-question round.</div>
+          </div>
+        </section>
+
+        <aside class="side" aria-label="Game statistics">
+          <div class="score-grid">
+            <div class="metric"><div class="metric-label">Score</div><div class="metric-value" id="score">0</div></div>
+            <div class="metric"><div class="metric-label">Streak</div><div class="metric-value" id="streak">0</div></div>
+            <div class="metric"><div class="metric-label">Lives</div><div class="metric-value small" id="lives">♥ ♥ ♥ ♥ ♥</div></div>
+            <div class="metric"><div class="metric-label">Best</div><div class="metric-value small" id="bestScore">0</div></div>
+          </div>
+          <div class="source-panel">
+            <div class="source-line"><span><span class="status-dot"></span>Dataset</span><strong id="sourceCount">0 samples</strong></div>
+            <div class="source-line"><span>Current deck</span><strong id="filterCount">0 samples</strong></div>
+            <div class="source-line"><span>Accepted input</span><strong>hàn · han4</strong></div>
+          </div>
+          <div class="list-panel">
+            <h2 class="list-title">Recent answers</h2>
+            <div class="recent" id="recentList"></div>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <div class="overlays show" id="difficultyOverlay" role="dialog" aria-modal="true" aria-labelledby="difficultyTitle">
+      <div class="modal">
+        <h2 id="difficultyTitle">Choose your script</h2>
+        <p class="modal-copy">Read 16 historical calligraphy samples. The script type and calligrapher are shown; supply the character’s pinyin and tone.</p>
+        <div class="option-section-title">Reading mode</div>
+        <div class="difficulty-options" role="radiogroup" aria-label="Script mode">
+          <button type="button" class="difficulty-option active" data-start-mode="all" role="radio" aria-checked="true"><span class="difficulty-name">混合 · Mixed scripts</span><span class="difficulty-count" data-start-count="all"></span></button>
+          <button type="button" class="difficulty-option" data-start-mode="行" role="radio" aria-checked="false"><span class="difficulty-name">行书 · Running script</span><span class="difficulty-count" data-start-count="行"></span></button>
+          <button type="button" class="difficulty-option" data-start-mode="草" role="radio" aria-checked="false"><span class="difficulty-name">草书 · Cursive script</span><span class="difficulty-count" data-start-count="草"></span></button>
+          <button type="button" class="difficulty-option" data-start-mode="隶" role="radio" aria-checked="false"><span class="difficulty-name">隶书 · Clerical script</span><span class="difficulty-count" data-start-count="隶"></span></button>
+          <button type="button" class="difficulty-option" data-start-mode="篆" role="radio" aria-checked="false"><span class="difficulty-name">篆书 · Seal script</span><span class="difficulty-count" data-start-count="篆"></span></button>
+        </div>
+        <div class="tone-note"><strong>Tones count.</strong> Enter a tone mark (<em>hàn</em>) or a tone number (<em>han4</em>). A toneless answer is only correct for a neutral-tone syllable.</div>
+        <div class="modal-actions"><button type="button" class="primary" id="launchStartButton">Start reading</button></div>
+      </div>
+    </div>
+
+    <div class="overlays" id="gameOverOverlay" role="dialog" aria-modal="true" aria-labelledby="gameOverTitle">
+      <div class="modal">
+        <h2 id="gameOverTitle">本轮结束</h2>
+        <p class="modal-copy" id="gameOverCopy">Score: 0</p>
+        <div class="game-summary" id="gameSummary" aria-label="Every question and answer"></div>
+        <div class="modal-actions">
+          <button type="button" class="ghost" id="closeOverlayButton">Close</button>
+          <button type="button" class="primary" id="playAgainButton">Play again</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="script_data.js"></script>
+    <script>
+      const DATA = window.SCRIPT_DATA || { meta: {}, authors: [], styles: [], entries: [] };
+      const QUESTION_SECONDS = 60;
+      const ROUND_LENGTH = 16;
+      const MODE_LABELS = { all: "Mixed scripts", 行: "Running script", 草: "Cursive script", 隶: "Clerical script", 篆: "Seal script" };
+
+      function base36(value) { return Number(value).toString(36); }
+      const ENTRIES = (DATA.entries || []).map((row, index) => ({
+        id: index,
+        author: DATA.authors[row[0]] || "佚名",
+        style: DATA.styles[row[1]] || "",
+        hanzi: row[2],
+        pinyin: row[3],
+        collection: row[4] === 0 ? "碑集" : "帖集",
+        image: `script-images/${base36(index)}.jpg`,
+      }));
+      const DECKS = { all: ENTRIES };
+      (DATA.styles || []).forEach((style) => { DECKS[style] = ENTRIES.filter((entry) => entry.style === style); });
+
+      const state = {
+        active: false,
+        mode: "all",
+        current: null,
+        score: 0,
+        streak: 0,
+        lives: 5,
+        correct: 0,
+        answered: 0,
+        seconds: QUESTION_SECONDS,
+        resolving: false,
+        history: [],
+        usedCharacters: new Set(),
+        timerId: null,
+        questionToken: 0,
+      };
+
+      const els = Object.fromEntries([
+        "route", "questionLabel", "timer", "scriptStyle", "scriptAuthor", "scriptCollection", "imageFrame",
+        "characterImage", "answerForm", "answerInput", "skipButton", "submitButton", "nextButton", "feedback",
+        "score", "streak", "lives", "bestScore", "sourceCount", "filterCount", "recentList", "startButton",
+        "resetButton", "difficultyOverlay", "launchStartButton", "gameOverOverlay", "gameOverTitle", "gameOverCopy",
+        "gameSummary", "closeOverlayButton", "playAgainButton",
+      ].map((id) => [id, document.getElementById(id)]));
+      els.modeButtons = [...document.querySelectorAll("[data-mode]")];
+      els.startModeButtons = [...document.querySelectorAll("[data-start-mode]")];
+      els.startModeCounts = [...document.querySelectorAll("[data-start-count]")];
+
+      function escapeHtml(value) {
+        return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+
+      const MARKED_TONES = {
+        ā: ["a", "1"], á: ["a", "2"], ǎ: ["a", "3"], à: ["a", "4"],
+        ē: ["e", "1"], é: ["e", "2"], ě: ["e", "3"], è: ["e", "4"],
+        ī: ["i", "1"], í: ["i", "2"], ǐ: ["i", "3"], ì: ["i", "4"],
+        ō: ["o", "1"], ó: ["o", "2"], ǒ: ["o", "3"], ò: ["o", "4"],
+        ū: ["u", "1"], ú: ["u", "2"], ǔ: ["u", "3"], ù: ["u", "4"],
+        ǖ: ["v", "1"], ǘ: ["v", "2"], ǚ: ["v", "3"], ǜ: ["v", "4"],
+        ń: ["n", "2"], ň: ["n", "3"], ǹ: ["n", "4"], ḿ: ["m", "2"],
+      };
+      const TONE_MARKS = {
+        a: ["a", "ā", "á", "ǎ", "à"], e: ["e", "ē", "é", "ě", "è"],
+        i: ["i", "ī", "í", "ǐ", "ì"], o: ["o", "ō", "ó", "ǒ", "ò"],
+        u: ["u", "ū", "ú", "ǔ", "ù"], v: ["ü", "ǖ", "ǘ", "ǚ", "ǜ"],
+      };
+
+      function normalizePinyin(value) {
+        let raw = String(value).normalize("NFC").trim().toLowerCase().replace(/u:/g, "v");
+        let markedTone = "";
+        raw = [...raw].map((character) => {
+          const marked = MARKED_TONES[character];
+          if (!marked) return character === "ü" ? "v" : character;
+          markedTone = marked[1];
+          return marked[0];
+        }).join("");
+        const numbered = raw.match(/^(.*?)([1-5])$/);
+        if (numbered) return `${numbered[1]}${numbered[2] === "5" ? "" : numbered[2]}`;
+        return `${raw}${markedTone}`;
+      }
+
+      function markedPinyin(numbered) {
+        const match = String(numbered).match(/^([a-zv]+)([1-5])?$/);
+        if (!match) return numbered;
+        const syllable = match[1];
+        const tone = Number(match[2] || 5);
+        if (tone === 5) return syllable.replace(/v/g, "ü");
+        let index = syllable.indexOf("a");
+        if (index < 0) index = syllable.indexOf("e");
+        if (index < 0 && syllable.includes("ou")) index = syllable.indexOf("o");
+        if (index < 0) {
+          for (let cursor = syllable.length - 1; cursor >= 0; cursor -= 1) {
+            if ("aeiouv".includes(syllable[cursor])) { index = cursor; break; }
+          }
+        }
+        if (index < 0) return numbered;
+        const vowel = syllable[index];
+        return `${syllable.slice(0, index)}${TONE_MARKS[vowel][tone]}${syllable.slice(index + 1)}`.replace(/v/g, "ü");
+      }
+
+      function bestKey() { return `hanzi-de-go-reading-best-${state.mode}`; }
+      function getBestScore() { return Number(localStorage.getItem(bestKey()) || 0); }
+      function setBestScore() { if (state.score > getBestScore()) localStorage.setItem(bestKey(), String(state.score)); }
+      function deck() { return DECKS[state.mode] || []; }
+
+      function setFeedback(message, mood = "") {
+        els.feedback.className = `feedback${mood ? ` ${mood}` : ""}`;
+        els.feedback.textContent = message;
+      }
+
+      function syncModeControls() {
+        els.modeButtons.forEach((button) => {
+          button.classList.toggle("active", button.dataset.mode === state.mode);
+          button.disabled = state.active;
+        });
+        els.startModeButtons.forEach((button) => {
+          const selected = button.dataset.startMode === state.mode;
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-checked", String(selected));
+          button.disabled = !(DECKS[button.dataset.startMode] || []).length;
+        });
+        els.startModeCounts.forEach((count) => {
+          const countValue = (DECKS[count.dataset.startCount] || []).length;
+          count.textContent = `${countValue.toLocaleString("en-US")} samples`;
+        });
+      }
+
+      function selectMode(mode) {
+        if (state.active || !(DECKS[mode] || []).length) return;
+        state.mode = mode;
+        syncModeControls();
+        render();
+      }
+
+      function showChooser() {
+        if (state.active) resetGame();
+        syncModeControls();
+        els.difficultyOverlay.classList.add("show");
+      }
+      function hideChooser() { els.difficultyOverlay.classList.remove("show"); }
+
+      function stopTimer() {
+        window.clearInterval(state.timerId);
+        state.timerId = null;
+      }
+      function startTimer() {
+        stopTimer();
+        state.timerId = window.setInterval(() => {
+          if (!state.active || state.resolving) return;
+          state.seconds -= 1;
+          renderStats();
+          if (state.seconds <= 0) resolveQuestion(false, "Time’s up", "—");
+        }, 1000);
+      }
+
+      function chooseQuestion() {
+        const available = deck().filter((entry) => !state.usedCharacters.has(entry.hanzi));
+        const pool = available.length ? available : deck();
+        state.current = pool[Math.floor(Math.random() * pool.length)];
+        state.usedCharacters.add(state.current.hanzi);
+        state.seconds = QUESTION_SECONDS;
+        state.resolving = false;
+        state.questionToken += 1;
+        renderQuestion();
+      }
+
+      function renderQuestion() {
+        const current = state.current;
+        const token = state.questionToken;
+        els.questionLabel.textContent = `Question ${state.answered + 1} / ${ROUND_LENGTH}`;
+        els.scriptStyle.textContent = `${current.style}书`;
+        els.scriptAuthor.textContent = current.author;
+        els.scriptCollection.textContent = `· ${current.collection}`;
+        els.answerInput.value = "";
+        els.answerInput.disabled = true;
+        els.submitButton.disabled = true;
+        els.skipButton.disabled = true;
+        els.submitButton.hidden = false;
+        els.skipButton.hidden = false;
+        els.nextButton.hidden = true;
+        els.imageFrame.classList.add("loading");
+        setFeedback("Name the sound and its tone. Tone marks and tone numbers are both accepted.");
+        els.characterImage.onload = () => {
+          if (!state.active || token !== state.questionToken) return;
+          els.imageFrame.classList.remove("loading");
+          els.answerInput.disabled = false;
+          els.submitButton.disabled = false;
+          els.skipButton.disabled = false;
+          els.answerInput.focus();
+          startTimer();
+        };
+        els.characterImage.onerror = () => {
+          if (token !== state.questionToken) return;
+          els.imageFrame.classList.remove("loading");
+          setFeedback("This sample could not be loaded. Choose Next to continue.", "bad");
+          state.resolving = true;
+          els.submitButton.hidden = true;
+          els.skipButton.hidden = true;
+          els.nextButton.hidden = false;
+        };
+        els.characterImage.src = current.image;
+        render();
+      }
+
+      function startGame() {
+        stopTimer();
+        state.active = true;
+        state.current = null;
+        state.score = 0;
+        state.streak = 0;
+        state.lives = 5;
+        state.correct = 0;
+        state.answered = 0;
+        state.history = [];
+        state.usedCharacters = new Set();
+        state.resolving = false;
+        hideChooser();
+        els.gameOverOverlay.classList.remove("show");
+        syncModeControls();
+        chooseQuestion();
+      }
+
+      function resetGame() {
+        stopTimer();
+        state.active = false;
+        state.current = null;
+        state.resolving = false;
+        state.seconds = QUESTION_SECONDS;
+        els.characterImage.removeAttribute("src");
+        els.imageFrame.classList.add("loading");
+        els.answerInput.disabled = true;
+        els.submitButton.disabled = true;
+        els.skipButton.disabled = true;
+        setFeedback("Choose a script to begin a 16-question round.");
+        syncModeControls();
+        render();
+      }
+
+      function submitAnswer(event) {
+        event.preventDefault();
+        if (!state.active || state.resolving) return;
+        const answer = els.answerInput.value.trim();
+        if (!answer) { setFeedback("Enter a pinyin syllable and its tone first.", "warn"); return; }
+        const normalized = normalizePinyin(answer);
+        const expected = normalizePinyin(state.current.pinyin);
+        resolveQuestion(normalized === expected, normalized === expected ? "Correct" : "Not quite", answer);
+      }
+
+      function resolveQuestion(ok, reason, userAnswer) {
+        if (!state.active || state.resolving) return;
+        stopTimer();
+        state.resolving = true;
+        state.answered += 1;
+        if (ok) {
+          state.correct += 1;
+          state.streak += 1;
+          state.score += 100 + state.seconds * 2 + Math.min(100, (state.streak - 1) * 20);
+        } else {
+          state.streak = 0;
+          state.lives = Math.max(0, state.lives - 1);
+        }
+        state.history.push({ entry: state.current, ok, reason, userAnswer });
+        const answer = markedPinyin(state.current.pinyin);
+        setFeedback(`${reason} — ${state.current.hanzi} is ${answer} (${state.current.pinyin}).`, ok ? "good" : "bad");
+        els.answerInput.disabled = true;
+        els.submitButton.hidden = true;
+        els.skipButton.hidden = true;
+        els.nextButton.hidden = false;
+        els.nextButton.textContent = state.answered >= ROUND_LENGTH || state.lives <= 0 ? "See results" : "Next";
+        els.nextButton.focus();
+        render();
+      }
+
+      function nextQuestion() {
+        if (!state.active || !state.resolving) return;
+        if (state.answered >= ROUND_LENGTH || state.lives <= 0) { endGame(); return; }
+        chooseQuestion();
+      }
+
+      function endGame() {
+        stopTimer();
+        state.active = false;
+        setBestScore();
+        syncModeControls();
+        render();
+        const perfect = state.correct === ROUND_LENGTH;
+        els.gameOverTitle.textContent = perfect ? "全线通关！" : state.lives <= 0 ? "旅程到站" : "本轮结束";
+        els.gameOverCopy.textContent = `${MODE_LABELS[state.mode]} · ${state.correct}/${state.answered} correct · ${state.score.toLocaleString("en-US")} points`;
+        renderSummary();
+        els.gameOverOverlay.classList.add("show");
+      }
+
+      function renderStats() {
+        els.score.textContent = state.score.toLocaleString("en-US");
+        els.streak.textContent = state.streak;
+        els.lives.textContent = `${"♥ ".repeat(state.lives)}${"· ".repeat(5 - state.lives)}`.trim();
+        els.bestScore.textContent = getBestScore().toLocaleString("en-US");
+        els.timer.textContent = state.seconds;
+        els.timer.classList.toggle("low", state.active && state.seconds <= 10);
+        const progress = Math.min(100, (state.answered / ROUND_LENGTH) * 100);
+        els.route.style.setProperty("--train-x", `${progress}%`);
+      }
+
+      function renderRecent() {
+        const recent = state.history.slice(-5).reverse();
+        if (!recent.length) {
+          els.recentList.innerHTML = '<div class="empty-recent">Your latest five readings will appear here.</div>';
+          return;
+        }
+        els.recentList.innerHTML = recent.map((result) => `
+          <div class="recent-row">
+            <img class="recent-image" src="${escapeHtml(result.entry.image)}" alt="" />
+            <div class="recent-hanzi">${escapeHtml(result.entry.hanzi)}</div>
+            <div class="recent-main">
+              <div class="recent-answer">${escapeHtml(markedPinyin(result.entry.pinyin))} · ${escapeHtml(result.entry.pinyin)}</div>
+              <div class="recent-meta">${escapeHtml(result.entry.style)}书 · ${escapeHtml(result.entry.author)}</div>
+            </div>
+            <div class="recent-mark ${result.ok ? "ok" : "no"}">${result.ok ? "✓" : "×"}</div>
+          </div>`).join("");
+      }
+
+      function renderSummary() {
+        els.gameSummary.innerHTML = state.history.map((result) => `
+          <div class="summary-row">
+            <img src="${escapeHtml(result.entry.image)}" alt="" />
+            <div class="summary-hanzi">${escapeHtml(result.entry.hanzi)}</div>
+            <div class="summary-main">
+              <div class="summary-answer">${escapeHtml(markedPinyin(result.entry.pinyin))} · ${escapeHtml(result.entry.pinyin)}</div>
+              <div class="summary-meta">Your answer: ${escapeHtml(result.userAnswer)} · ${escapeHtml(result.entry.style)}书 · ${escapeHtml(result.entry.author)}</div>
+            </div>
+            <div class="recent-mark ${result.ok ? "ok" : "no"}">${result.ok ? "✓" : "×"}</div>
+          </div>`).join("");
+      }
+
+      function render() {
+        renderStats();
+        renderRecent();
+        els.sourceCount.textContent = `${(DATA.meta.samples || ENTRIES.length).toLocaleString("en-US")} samples`;
+        els.filterCount.textContent = `${deck().length.toLocaleString("en-US")} samples`;
+        els.startButton.textContent = state.active ? "Reading…" : "Start";
+        els.startButton.disabled = state.active;
+        if (!state.active && !state.current) {
+          els.questionLabel.textContent = "Choose a script";
+          els.scriptStyle.textContent = "书体";
+          els.scriptAuthor.textContent = "作者";
+          els.scriptCollection.textContent = "";
+        }
+      }
+
+      els.modeButtons.forEach((button) => button.addEventListener("click", () => selectMode(button.dataset.mode)));
+      els.startModeButtons.forEach((button) => button.addEventListener("click", () => selectMode(button.dataset.startMode)));
+      els.answerForm.addEventListener("submit", submitAnswer);
+      els.skipButton.addEventListener("click", () => resolveQuestion(false, "Skipped", "—"));
+      els.nextButton.addEventListener("click", nextQuestion);
+      els.startButton.addEventListener("click", showChooser);
+      els.resetButton.addEventListener("click", showChooser);
+      els.launchStartButton.addEventListener("click", startGame);
+      els.playAgainButton.addEventListener("click", () => { els.gameOverOverlay.classList.remove("show"); showChooser(); });
+      els.closeOverlayButton.addEventListener("click", () => els.gameOverOverlay.classList.remove("show"));
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && els.gameOverOverlay.classList.contains("show")) els.gameOverOverlay.classList.remove("show");
+      });
+
+      syncModeControls();
+      render();
+    </script>
+  </body>
+</html>
