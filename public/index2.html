@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="辨认历代书法字形，并输入带声调的拼音。" />
+    <meta name="description" content="辨认历代书法字形，并输入汉字或拼音。" />
     <title>Hanzi De Go · 认读挑战</title>
     <style>
       :root {
@@ -326,9 +326,9 @@
           </div>
 
           <div class="answer-panel">
-            <label class="answer-label" for="answerInput">请输入该字的拼音，并标明声调。</label>
+            <label class="answer-label" for="answerInput">请输入该字（简繁体均可），或输入拼音（可不标声调）。</label>
             <form class="answer-form" id="answerForm">
-              <input class="answer-input" id="answerInput" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="输入示例：hàn 或 han4" disabled />
+              <input class="answer-input" id="answerInput" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="输入示例：漢、hàn、han4 或 han" disabled />
               <button type="button" class="ghost" id="skipButton" disabled>跳过</button>
               <button type="submit" class="secondary" id="submitButton" disabled>检查</button>
               <button type="button" class="primary" id="nextButton" hidden>下一题</button>
@@ -347,7 +347,7 @@
           <div class="source-panel">
             <div class="source-line"><span><span class="status-dot"></span>题库总量</span><strong id="sourceCount">0 个字样</strong></div>
             <div class="source-line"><span>当前题库</span><strong id="filterCount">0 个字样</strong></div>
-            <div class="source-line"><span>输入示例</span><strong>hàn · han4</strong></div>
+            <div class="source-line"><span>输入示例</span><strong>漢 · hàn · han4 · han</strong></div>
           </div>
           <div class="list-panel">
             <h2 class="list-title">最近作答</h2>
@@ -360,7 +360,7 @@
     <div class="overlays show" id="difficultyOverlay" role="dialog" aria-modal="true" aria-labelledby="difficultyTitle">
       <div class="modal">
         <h2 id="difficultyTitle">选择书体</h2>
-        <p class="modal-copy">每轮辨认 16 个历代书法字形。题目会显示书体与书家，请输入该字带声调的拼音。</p>
+        <p class="modal-copy">每轮辨认 16 个历代书法字形。题目会显示书体与书家，请输入该字或它的拼音。</p>
         <div class="option-section-title">认读模式</div>
         <div class="difficulty-options" role="radiogroup" aria-label="书体模式">
           <button type="button" class="difficulty-option active" data-start-mode="all" role="radio" aria-checked="true"><span class="difficulty-name">混合书体</span><span class="difficulty-count" data-start-count="all"></span></button>
@@ -369,7 +369,7 @@
           <button type="button" class="difficulty-option" data-start-mode="隶" role="radio" aria-checked="false"><span class="difficulty-name">隶书</span><span class="difficulty-count" data-start-count="隶"></span></button>
           <button type="button" class="difficulty-option" data-start-mode="篆" role="radio" aria-checked="false"><span class="difficulty-name">篆书</span><span class="difficulty-count" data-start-count="篆"></span></button>
         </div>
-        <div class="tone-note"><strong>声调必须正确。</strong>可输入声调符号（<em>hàn</em>），也可输入数字声调（<em>han4</em>）。只有轻声答案可以不标声调。</div>
+        <div class="tone-note"><strong>三种答法都可以。</strong>可直接输入汉字（题面字形或对应简体均可），也可输入带声调或不带声调的拼音。若主动标注声调，则声调必须正确。</div>
         <div class="modal-actions"><button type="button" class="primary" id="launchStartButton">开始认读</button></div>
       </div>
     </div>
@@ -399,6 +399,7 @@
         author: DATA.authors[row[0]] || "佚名",
         style: DATA.styles[row[1]] || "",
         hanzi: row[2],
+        canonicalHanzi: row[5] || row[2],
         pinyin: row[3],
         collection: row[4] === 0 ? "碑集" : "帖集",
         image: `script-images/${base36(index)}.jpg`,
@@ -452,6 +453,11 @@
         i: ["i", "ī", "í", "ǐ", "ì"], o: ["o", "ō", "ó", "ǒ", "ò"],
         u: ["u", "ū", "ú", "ǔ", "ù"], v: ["ü", "ǖ", "ǘ", "ǚ", "ǜ"],
       };
+
+      function hasExplicitTone(value) {
+        const raw = String(value).normalize("NFC").trim().toLowerCase();
+        return /[1-5]$/.test(raw) || [...raw].some((character) => Boolean(MARKED_TONES[character]));
+      }
 
       function normalizePinyin(value) {
         let raw = String(value).normalize("NFC").trim().toLowerCase().replace(/u:/g, "v");
@@ -568,7 +574,7 @@
         els.skipButton.textContent = "跳过";
         els.nextButton.hidden = true;
         els.imageFrame.classList.add("loading");
-        setFeedback("请输入该字的拼音和声调；声调符号与数字声调均可。");
+        setFeedback("请输入该字，或输入拼音；拼音可以不标声调。");
         els.characterImage.onload = () => {
           if (!state.active || token !== state.questionToken) return;
           els.imageFrame.classList.remove("loading");
@@ -629,10 +635,14 @@
         event.preventDefault();
         if (!state.active || state.resolving) return;
         const answer = els.answerInput.value.trim();
-        if (!answer) { setFeedback("请先输入拼音和声调。", "warn"); return; }
+        if (!answer) { setFeedback("请先输入汉字或拼音。", "warn"); return; }
         const normalized = normalizePinyin(answer);
         const expected = normalizePinyin(state.current.pinyin);
-        resolveQuestion(normalized === expected, normalized === expected ? "正确" : "不正确", answer);
+        const expectedWithoutTone = expected.replace(/[1-4]$/, "");
+        const characterMatches = answer === state.current.hanzi || answer === state.current.canonicalHanzi;
+        const pinyinMatches = normalized === expected || (!hasExplicitTone(answer) && normalized === expectedWithoutTone);
+        const isCorrect = characterMatches || pinyinMatches;
+        resolveQuestion(isCorrect, isCorrect ? "正确" : "不正确", answer);
       }
 
       function resolveQuestion(ok, reason, userAnswer) {
