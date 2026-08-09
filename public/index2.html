@@ -565,6 +565,7 @@
         els.skipButton.disabled = true;
         els.submitButton.hidden = false;
         els.skipButton.hidden = false;
+        els.skipButton.textContent = "跳过";
         els.nextButton.hidden = true;
         els.imageFrame.classList.add("loading");
         setFeedback("请输入该字的拼音和声调；声调符号与数字声调均可。");
@@ -660,9 +661,29 @@
       }
 
       function nextQuestion() {
-        if (!state.active || !state.resolving) return;
+        if (!state.active) { showResults(); return; }
+        if (!state.resolving) return;
         if (state.answered >= ROUND_LENGTH || state.lives <= 0) { endGame(); return; }
         chooseQuestion();
+      }
+
+      function showResults() {
+        if (!state.history.length) return;
+        const perfect = state.correct === ROUND_LENGTH;
+        els.gameOverTitle.textContent = perfect ? "全线通关！" : state.lives <= 0 ? "旅程到站" : "本轮结束";
+        els.gameOverCopy.textContent = `${MODE_LABELS[state.mode]} · 答对 ${state.correct}/${state.answered} 题 · ${state.score.toLocaleString("zh-CN")} 分`;
+        renderSummary();
+        els.gameOverOverlay.classList.add("show");
+      }
+
+      function closeResults() {
+        els.gameOverOverlay.classList.remove("show");
+        if (!els.nextButton.hidden) els.nextButton.focus();
+      }
+
+      function restartGame() {
+        els.gameOverOverlay.classList.remove("show");
+        startGame();
       }
 
       function endGame() {
@@ -671,11 +692,12 @@
         setBestScore();
         syncModeControls();
         render();
-        const perfect = state.correct === ROUND_LENGTH;
-        els.gameOverTitle.textContent = perfect ? "全线通关！" : state.lives <= 0 ? "旅程到站" : "本轮结束";
-        els.gameOverCopy.textContent = `${MODE_LABELS[state.mode]} · 答对 ${state.correct}/${state.answered} 题 · ${state.score.toLocaleString("zh-CN")} 分`;
-        renderSummary();
-        els.gameOverOverlay.classList.add("show");
+        els.skipButton.hidden = false;
+        els.skipButton.disabled = false;
+        els.skipButton.textContent = "再来一局";
+        els.nextButton.hidden = false;
+        els.nextButton.textContent = "查看结果";
+        showResults();
       }
 
       function renderStats() {
@@ -738,15 +760,18 @@
       els.modeButtons.forEach((button) => button.addEventListener("click", () => selectMode(button.dataset.mode)));
       els.startModeButtons.forEach((button) => button.addEventListener("click", () => selectMode(button.dataset.startMode)));
       els.answerForm.addEventListener("submit", submitAnswer);
-      els.skipButton.addEventListener("click", () => resolveQuestion(false, "已跳过", "—"));
+      els.skipButton.addEventListener("click", () => {
+        if (!state.active && state.history.length) { restartGame(); return; }
+        resolveQuestion(false, "已跳过", "—");
+      });
       els.nextButton.addEventListener("click", nextQuestion);
-      els.startButton.addEventListener("click", showChooser);
+      els.startButton.addEventListener("click", startGame);
       els.resetButton.addEventListener("click", showChooser);
       els.launchStartButton.addEventListener("click", startGame);
-      els.playAgainButton.addEventListener("click", () => { els.gameOverOverlay.classList.remove("show"); showChooser(); });
-      els.closeOverlayButton.addEventListener("click", () => els.gameOverOverlay.classList.remove("show"));
+      els.playAgainButton.addEventListener("click", restartGame);
+      els.closeOverlayButton.addEventListener("click", closeResults);
       document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && els.gameOverOverlay.classList.contains("show")) els.gameOverOverlay.classList.remove("show");
+        if (event.key === "Escape" && els.gameOverOverlay.classList.contains("show")) closeResults();
       });
 
       syncModeControls();
