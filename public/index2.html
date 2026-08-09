@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Identify Chinese calligraphy and type its pinyin with the correct tone." />
+    <meta name="description" content="辨认历代书法字形，并输入带声调的拼音。" />
     <title>Hanzi De Go · 认读挑战</title>
     <style>
       :root {
@@ -273,25 +273,25 @@
           <div class="brand-mark" aria-hidden="true">读</div>
           <div>
             <h1>Hanzi De Go</h1>
-            <div class="subtitle">认读挑战 · Calligraphy reading sprint</div>
+            <div class="subtitle">认读挑战 · 历代书法识字</div>
           </div>
         </div>
         <div class="controls">
-          <a class="text-link" href="index.html">Writing game</a>
-          <div class="segmented" aria-label="Script filter">
+          <a class="text-link" href="index.html">写字挑战</a>
+          <div class="segmented" aria-label="书体筛选">
             <button type="button" class="active" data-mode="all">混合</button>
             <button type="button" data-mode="行">行</button>
             <button type="button" data-mode="草">草</button>
             <button type="button" data-mode="隶">隶</button>
             <button type="button" data-mode="篆">篆</button>
           </div>
-          <button type="button" class="ghost" id="resetButton">Choose script</button>
-          <button type="button" class="primary" id="startButton">Start</button>
+          <button type="button" class="ghost" id="resetButton">选择书体</button>
+          <button type="button" class="primary" id="startButton">开始</button>
         </div>
       </header>
 
       <main class="game-shell">
-        <section class="route" id="route" aria-label="Round progress">
+        <section class="route" id="route" aria-label="本轮进度">
           <div class="route-sun"></div>
           <div class="track"></div>
           <div class="track-fill"></div>
@@ -300,17 +300,17 @@
             <div class="wheel one"></div>
             <div class="wheel two"></div>
           </div>
-          <div class="station-labels"><span>Start</span><span>4</span><span>8</span><span>12</span><span>Finish</span></div>
+          <div class="station-labels"><span>起点</span><span>4</span><span>8</span><span>12</span><span>终点</span></div>
         </section>
 
-        <section class="stage" aria-label="Reading question">
+        <section class="stage" aria-label="认读题目">
           <div class="question-head">
-            <div class="pill" id="questionLabel">Choose a script</div>
-            <div class="timer" id="timer" aria-label="Time remaining">60</div>
+            <div class="pill" id="questionLabel">请选择书体</div>
+            <div class="timer" id="timer" aria-label="剩余时间">60</div>
           </div>
 
           <div class="prompt-card">
-            <div class="prompt-eyebrow">Script and calligrapher</div>
+            <div class="prompt-eyebrow">书体与书家</div>
             <div class="script-meta">
               <span class="script-style" id="scriptStyle">书体</span>
               <span class="script-author" id="scriptAuthor">作者</span>
@@ -320,37 +320,37 @@
 
           <div class="character-zone">
             <div class="image-frame loading" id="imageFrame">
-              <img class="character-image" id="characterImage" alt="Calligraphy sample to identify" />
-              <div class="image-loading">Preparing the next character…</div>
+              <img class="character-image" id="characterImage" alt="待辨认的书法字形" />
+              <div class="image-loading">正在准备下一题…</div>
             </div>
           </div>
 
           <div class="answer-panel">
-            <label class="answer-label" for="answerInput">Type the pinyin with its tone mark or tone number.</label>
+            <label class="answer-label" for="answerInput">请输入该字的拼音，并标明声调。</label>
             <form class="answer-form" id="answerForm">
-              <input class="answer-input" id="answerInput" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="hàn or han4" disabled />
-              <button type="button" class="ghost" id="skipButton" disabled>Skip</button>
-              <button type="submit" class="secondary" id="submitButton" disabled>Check</button>
-              <button type="button" class="primary" id="nextButton" hidden>Next</button>
+              <input class="answer-input" id="answerInput" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="输入示例：hàn 或 han4" disabled />
+              <button type="button" class="ghost" id="skipButton" disabled>跳过</button>
+              <button type="submit" class="secondary" id="submitButton" disabled>检查</button>
+              <button type="button" class="primary" id="nextButton" hidden>下一题</button>
             </form>
-            <div class="feedback" id="feedback" role="status" aria-live="polite">Choose a script to begin a 16-question round.</div>
+            <div class="feedback" id="feedback" role="status" aria-live="polite">选择书体后开始 16 题挑战。</div>
           </div>
         </section>
 
-        <aside class="side" aria-label="Game statistics">
+        <aside class="side" aria-label="游戏统计">
           <div class="score-grid">
-            <div class="metric"><div class="metric-label">Score</div><div class="metric-value" id="score">0</div></div>
-            <div class="metric"><div class="metric-label">Streak</div><div class="metric-value" id="streak">0</div></div>
-            <div class="metric"><div class="metric-label">Lives</div><div class="metric-value small" id="lives">♥ ♥ ♥ ♥ ♥</div></div>
-            <div class="metric"><div class="metric-label">Best</div><div class="metric-value small" id="bestScore">0</div></div>
+            <div class="metric"><div class="metric-label">得分</div><div class="metric-value" id="score">0</div></div>
+            <div class="metric"><div class="metric-label">连对</div><div class="metric-value" id="streak">0</div></div>
+            <div class="metric"><div class="metric-label">生命</div><div class="metric-value small" id="lives">♥ ♥ ♥ ♥ ♥</div></div>
+            <div class="metric"><div class="metric-label">最佳</div><div class="metric-value small" id="bestScore">0</div></div>
           </div>
           <div class="source-panel">
-            <div class="source-line"><span><span class="status-dot"></span>Dataset</span><strong id="sourceCount">0 samples</strong></div>
-            <div class="source-line"><span>Current deck</span><strong id="filterCount">0 samples</strong></div>
-            <div class="source-line"><span>Accepted input</span><strong>hàn · han4</strong></div>
+            <div class="source-line"><span><span class="status-dot"></span>题库总量</span><strong id="sourceCount">0 个字样</strong></div>
+            <div class="source-line"><span>当前题库</span><strong id="filterCount">0 个字样</strong></div>
+            <div class="source-line"><span>输入示例</span><strong>hàn · han4</strong></div>
           </div>
           <div class="list-panel">
-            <h2 class="list-title">Recent answers</h2>
+            <h2 class="list-title">最近作答</h2>
             <div class="recent" id="recentList"></div>
           </div>
         </aside>
@@ -359,29 +359,29 @@
 
     <div class="overlays show" id="difficultyOverlay" role="dialog" aria-modal="true" aria-labelledby="difficultyTitle">
       <div class="modal">
-        <h2 id="difficultyTitle">Choose your script</h2>
-        <p class="modal-copy">Read 16 historical calligraphy samples. The script type and calligrapher are shown; supply the character’s pinyin and tone.</p>
-        <div class="option-section-title">Reading mode</div>
-        <div class="difficulty-options" role="radiogroup" aria-label="Script mode">
-          <button type="button" class="difficulty-option active" data-start-mode="all" role="radio" aria-checked="true"><span class="difficulty-name">混合 · Mixed scripts</span><span class="difficulty-count" data-start-count="all"></span></button>
-          <button type="button" class="difficulty-option" data-start-mode="行" role="radio" aria-checked="false"><span class="difficulty-name">行书 · Running script</span><span class="difficulty-count" data-start-count="行"></span></button>
-          <button type="button" class="difficulty-option" data-start-mode="草" role="radio" aria-checked="false"><span class="difficulty-name">草书 · Cursive script</span><span class="difficulty-count" data-start-count="草"></span></button>
-          <button type="button" class="difficulty-option" data-start-mode="隶" role="radio" aria-checked="false"><span class="difficulty-name">隶书 · Clerical script</span><span class="difficulty-count" data-start-count="隶"></span></button>
-          <button type="button" class="difficulty-option" data-start-mode="篆" role="radio" aria-checked="false"><span class="difficulty-name">篆书 · Seal script</span><span class="difficulty-count" data-start-count="篆"></span></button>
+        <h2 id="difficultyTitle">选择书体</h2>
+        <p class="modal-copy">每轮辨认 16 个历代书法字形。题目会显示书体与书家，请输入该字带声调的拼音。</p>
+        <div class="option-section-title">认读模式</div>
+        <div class="difficulty-options" role="radiogroup" aria-label="书体模式">
+          <button type="button" class="difficulty-option active" data-start-mode="all" role="radio" aria-checked="true"><span class="difficulty-name">混合书体</span><span class="difficulty-count" data-start-count="all"></span></button>
+          <button type="button" class="difficulty-option" data-start-mode="行" role="radio" aria-checked="false"><span class="difficulty-name">行书</span><span class="difficulty-count" data-start-count="行"></span></button>
+          <button type="button" class="difficulty-option" data-start-mode="草" role="radio" aria-checked="false"><span class="difficulty-name">草书</span><span class="difficulty-count" data-start-count="草"></span></button>
+          <button type="button" class="difficulty-option" data-start-mode="隶" role="radio" aria-checked="false"><span class="difficulty-name">隶书</span><span class="difficulty-count" data-start-count="隶"></span></button>
+          <button type="button" class="difficulty-option" data-start-mode="篆" role="radio" aria-checked="false"><span class="difficulty-name">篆书</span><span class="difficulty-count" data-start-count="篆"></span></button>
         </div>
-        <div class="tone-note"><strong>Tones count.</strong> Enter a tone mark (<em>hàn</em>) or a tone number (<em>han4</em>). A toneless answer is only correct for a neutral-tone syllable.</div>
-        <div class="modal-actions"><button type="button" class="primary" id="launchStartButton">Start reading</button></div>
+        <div class="tone-note"><strong>声调必须正确。</strong>可输入声调符号（<em>hàn</em>），也可输入数字声调（<em>han4</em>）。只有轻声答案可以不标声调。</div>
+        <div class="modal-actions"><button type="button" class="primary" id="launchStartButton">开始认读</button></div>
       </div>
     </div>
 
     <div class="overlays" id="gameOverOverlay" role="dialog" aria-modal="true" aria-labelledby="gameOverTitle">
       <div class="modal">
         <h2 id="gameOverTitle">本轮结束</h2>
-        <p class="modal-copy" id="gameOverCopy">Score: 0</p>
-        <div class="game-summary" id="gameSummary" aria-label="Every question and answer"></div>
+        <p class="modal-copy" id="gameOverCopy">得分：0</p>
+        <div class="game-summary" id="gameSummary" aria-label="全部题目与答案"></div>
         <div class="modal-actions">
-          <button type="button" class="ghost" id="closeOverlayButton">Close</button>
-          <button type="button" class="primary" id="playAgainButton">Play again</button>
+          <button type="button" class="ghost" id="closeOverlayButton">关闭</button>
+          <button type="button" class="primary" id="playAgainButton">再来一局</button>
         </div>
       </div>
     </div>
@@ -391,7 +391,7 @@
       const DATA = window.SCRIPT_DATA || { meta: {}, authors: [], styles: [], entries: [] };
       const QUESTION_SECONDS = 60;
       const ROUND_LENGTH = 16;
-      const MODE_LABELS = { all: "Mixed scripts", 行: "Running script", 草: "Cursive script", 隶: "Clerical script", 篆: "Seal script" };
+      const MODE_LABELS = { all: "混合书体", 行: "行书", 草: "草书", 隶: "隶书", 篆: "篆书" };
 
       function base36(value) { return Number(value).toString(36); }
       const ENTRIES = (DATA.entries || []).map((row, index) => ({
@@ -509,7 +509,7 @@
         });
         els.startModeCounts.forEach((count) => {
           const countValue = (DECKS[count.dataset.startCount] || []).length;
-          count.textContent = `${countValue.toLocaleString("en-US")} samples`;
+          count.textContent = `${countValue.toLocaleString("zh-CN")} 个字样`;
         });
       }
 
@@ -537,7 +537,7 @@
           if (!state.active || state.resolving) return;
           state.seconds -= 1;
           renderStats();
-          if (state.seconds <= 0) resolveQuestion(false, "Time’s up", "—");
+          if (state.seconds <= 0) resolveQuestion(false, "时间到", "—");
         }, 1000);
       }
 
@@ -555,7 +555,7 @@
       function renderQuestion() {
         const current = state.current;
         const token = state.questionToken;
-        els.questionLabel.textContent = `Question ${state.answered + 1} / ${ROUND_LENGTH}`;
+        els.questionLabel.textContent = `第 ${state.answered + 1} / ${ROUND_LENGTH} 题`;
         els.scriptStyle.textContent = `${current.style}书`;
         els.scriptAuthor.textContent = current.author;
         els.scriptCollection.textContent = `· ${current.collection}`;
@@ -567,7 +567,7 @@
         els.skipButton.hidden = false;
         els.nextButton.hidden = true;
         els.imageFrame.classList.add("loading");
-        setFeedback("Name the sound and its tone. Tone marks and tone numbers are both accepted.");
+        setFeedback("请输入该字的拼音和声调；声调符号与数字声调均可。");
         els.characterImage.onload = () => {
           if (!state.active || token !== state.questionToken) return;
           els.imageFrame.classList.remove("loading");
@@ -580,7 +580,7 @@
         els.characterImage.onerror = () => {
           if (token !== state.questionToken) return;
           els.imageFrame.classList.remove("loading");
-          setFeedback("This sample could not be loaded. Choose Next to continue.", "bad");
+          setFeedback("这张字图加载失败，请选择“下一题”继续。", "bad");
           state.resolving = true;
           els.submitButton.hidden = true;
           els.skipButton.hidden = true;
@@ -619,7 +619,7 @@
         els.answerInput.disabled = true;
         els.submitButton.disabled = true;
         els.skipButton.disabled = true;
-        setFeedback("Choose a script to begin a 16-question round.");
+        setFeedback("选择书体后开始 16 题挑战。");
         syncModeControls();
         render();
       }
@@ -628,10 +628,10 @@
         event.preventDefault();
         if (!state.active || state.resolving) return;
         const answer = els.answerInput.value.trim();
-        if (!answer) { setFeedback("Enter a pinyin syllable and its tone first.", "warn"); return; }
+        if (!answer) { setFeedback("请先输入拼音和声调。", "warn"); return; }
         const normalized = normalizePinyin(answer);
         const expected = normalizePinyin(state.current.pinyin);
-        resolveQuestion(normalized === expected, normalized === expected ? "Correct" : "Not quite", answer);
+        resolveQuestion(normalized === expected, normalized === expected ? "正确" : "不正确", answer);
       }
 
       function resolveQuestion(ok, reason, userAnswer) {
@@ -649,12 +649,12 @@
         }
         state.history.push({ entry: state.current, ok, reason, userAnswer });
         const answer = markedPinyin(state.current.pinyin);
-        setFeedback(`${reason} — ${state.current.hanzi} is ${answer} (${state.current.pinyin}).`, ok ? "good" : "bad");
+        setFeedback(`${reason} — ${state.current.hanzi} 读作 ${answer}（${state.current.pinyin}）。`, ok ? "good" : "bad");
         els.answerInput.disabled = true;
         els.submitButton.hidden = true;
         els.skipButton.hidden = true;
         els.nextButton.hidden = false;
-        els.nextButton.textContent = state.answered >= ROUND_LENGTH || state.lives <= 0 ? "See results" : "Next";
+        els.nextButton.textContent = state.answered >= ROUND_LENGTH || state.lives <= 0 ? "查看结果" : "下一题";
         els.nextButton.focus();
         render();
       }
@@ -673,7 +673,7 @@
         render();
         const perfect = state.correct === ROUND_LENGTH;
         els.gameOverTitle.textContent = perfect ? "全线通关！" : state.lives <= 0 ? "旅程到站" : "本轮结束";
-        els.gameOverCopy.textContent = `${MODE_LABELS[state.mode]} · ${state.correct}/${state.answered} correct · ${state.score.toLocaleString("en-US")} points`;
+        els.gameOverCopy.textContent = `${MODE_LABELS[state.mode]} · 答对 ${state.correct}/${state.answered} 题 · ${state.score.toLocaleString("zh-CN")} 分`;
         renderSummary();
         els.gameOverOverlay.classList.add("show");
       }
@@ -682,7 +682,7 @@
         els.score.textContent = state.score.toLocaleString("en-US");
         els.streak.textContent = state.streak;
         els.lives.textContent = `${"♥ ".repeat(state.lives)}${"· ".repeat(5 - state.lives)}`.trim();
-        els.bestScore.textContent = getBestScore().toLocaleString("en-US");
+        els.bestScore.textContent = getBestScore().toLocaleString("zh-CN");
         els.timer.textContent = state.seconds;
         els.timer.classList.toggle("low", state.active && state.seconds <= 10);
         const progress = Math.min(100, (state.answered / ROUND_LENGTH) * 100);
@@ -692,7 +692,7 @@
       function renderRecent() {
         const recent = state.history.slice(-5).reverse();
         if (!recent.length) {
-          els.recentList.innerHTML = '<div class="empty-recent">Your latest five readings will appear here.</div>';
+          els.recentList.innerHTML = '<div class="empty-recent">最近五次作答会显示在这里。</div>';
           return;
         }
         els.recentList.innerHTML = recent.map((result) => `
@@ -714,7 +714,7 @@
             <div class="summary-hanzi">${escapeHtml(result.entry.hanzi)}</div>
             <div class="summary-main">
               <div class="summary-answer">${escapeHtml(markedPinyin(result.entry.pinyin))} · ${escapeHtml(result.entry.pinyin)}</div>
-              <div class="summary-meta">Your answer: ${escapeHtml(result.userAnswer)} · ${escapeHtml(result.entry.style)}书 · ${escapeHtml(result.entry.author)}</div>
+              <div class="summary-meta">你的答案：${escapeHtml(result.userAnswer)} · ${escapeHtml(result.entry.style)}书 · ${escapeHtml(result.entry.author)}</div>
             </div>
             <div class="recent-mark ${result.ok ? "ok" : "no"}">${result.ok ? "✓" : "×"}</div>
           </div>`).join("");
@@ -723,12 +723,12 @@
       function render() {
         renderStats();
         renderRecent();
-        els.sourceCount.textContent = `${(DATA.meta.samples || ENTRIES.length).toLocaleString("en-US")} samples`;
-        els.filterCount.textContent = `${deck().length.toLocaleString("en-US")} samples`;
-        els.startButton.textContent = state.active ? "Reading…" : "Start";
+        els.sourceCount.textContent = `${(DATA.meta.samples || ENTRIES.length).toLocaleString("zh-CN")} 个字样`;
+        els.filterCount.textContent = `${deck().length.toLocaleString("zh-CN")} 个字样`;
+        els.startButton.textContent = state.active ? "答题中…" : "开始";
         els.startButton.disabled = state.active;
         if (!state.active && !state.current) {
-          els.questionLabel.textContent = "Choose a script";
+          els.questionLabel.textContent = "请选择书体";
           els.scriptStyle.textContent = "书体";
           els.scriptAuthor.textContent = "作者";
           els.scriptCollection.textContent = "";
@@ -738,7 +738,7 @@
       els.modeButtons.forEach((button) => button.addEventListener("click", () => selectMode(button.dataset.mode)));
       els.startModeButtons.forEach((button) => button.addEventListener("click", () => selectMode(button.dataset.startMode)));
       els.answerForm.addEventListener("submit", submitAnswer);
-      els.skipButton.addEventListener("click", () => resolveQuestion(false, "Skipped", "—"));
+      els.skipButton.addEventListener("click", () => resolveQuestion(false, "已跳过", "—"));
       els.nextButton.addEventListener("click", nextQuestion);
       els.startButton.addEventListener("click", showChooser);
       els.resetButton.addEventListener("click", showChooser);
