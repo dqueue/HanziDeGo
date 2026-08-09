@@ -326,11 +326,12 @@
           </div>
 
           <div class="answer-panel">
-            <label class="answer-label" for="answerInput">请输入该字（简繁体均可），或输入拼音（可不标声调）。</label>
+            <label class="answer-label" for="answerInput">可输入汉字或拼音（可不标声调）。简繁体判定并不完全一致，误判时可自行改正。</label>
             <form class="answer-form" id="answerForm">
-              <input class="answer-input" id="answerInput" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="输入示例：漢、hàn、han4 或 han" disabled />
+              <input class="answer-input" id="answerInput" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="输入示例：汉/漢、hàn、han4 或 han" disabled />
               <button type="button" class="ghost" id="skipButton" disabled>跳过</button>
               <button type="submit" class="secondary" id="submitButton" disabled>检查</button>
+              <button type="button" class="secondary" id="selfMarkButton" hidden>算我答对</button>
               <button type="button" class="primary" id="nextButton" hidden>下一题</button>
             </form>
             <div class="feedback" id="feedback" role="status" aria-live="polite">选择书体后开始 16 题挑战。</div>
@@ -347,7 +348,7 @@
           <div class="source-panel">
             <div class="source-line"><span><span class="status-dot"></span>题库总量</span><strong id="sourceCount">0 个字样</strong></div>
             <div class="source-line"><span>当前题库</span><strong id="filterCount">0 个字样</strong></div>
-            <div class="source-line"><span>输入示例</span><strong>漢 · hàn · han4 · han</strong></div>
+            <div class="source-line"><span>输入示例</span><strong>汉/漢 · hàn · han4 · han</strong></div>
           </div>
           <div class="list-panel">
             <h2 class="list-title">最近作答</h2>
@@ -360,7 +361,7 @@
     <div class="overlays show" id="difficultyOverlay" role="dialog" aria-modal="true" aria-labelledby="difficultyTitle">
       <div class="modal">
         <h2 id="difficultyTitle">选择书体</h2>
-        <p class="modal-copy">每轮辨认 16 个历代书法字形。题目会显示书体与书家，请输入该字或它的拼音。</p>
+        <p class="modal-copy">每轮辨认 16 个历代书法字形。题目会显示书体与书家，请输入汉字或拼音。</p>
         <div class="option-section-title">认读模式</div>
         <div class="difficulty-options" role="radiogroup" aria-label="书体模式">
           <button type="button" class="difficulty-option active" data-start-mode="all" role="radio" aria-checked="true"><span class="difficulty-name">混合书体</span><span class="difficulty-count" data-start-count="all"></span></button>
@@ -369,7 +370,7 @@
           <button type="button" class="difficulty-option" data-start-mode="隶" role="radio" aria-checked="false"><span class="difficulty-name">隶书</span><span class="difficulty-count" data-start-count="隶"></span></button>
           <button type="button" class="difficulty-option" data-start-mode="篆" role="radio" aria-checked="false"><span class="difficulty-name">篆书</span><span class="difficulty-count" data-start-count="篆"></span></button>
         </div>
-        <div class="tone-note"><strong>三种答法都可以。</strong>可直接输入汉字（题面字形或对应简体均可），也可输入带声调或不带声调的拼音。若主动标注声调，则声调必须正确。</div>
+        <div class="tone-note"><strong>汉字的简繁体匹配并不完全一致。</strong>若汉字答案实际正确却被系统判错，请点击“算我答对”。拼音可以带声调或不带声调；若主动标注声调，则声调必须正确。</div>
         <div class="modal-actions"><button type="button" class="primary" id="launchStartButton">开始认读</button></div>
       </div>
     </div>
@@ -418,6 +419,7 @@
         answered: 0,
         seconds: QUESTION_SECONDS,
         resolving: false,
+        selfMarkAvailable: false,
         history: [],
         usedCharacters: new Set(),
         timerId: null,
@@ -426,7 +428,7 @@
 
       const els = Object.fromEntries([
         "route", "questionLabel", "timer", "scriptStyle", "scriptAuthor", "scriptCollection", "imageFrame",
-        "characterImage", "answerForm", "answerInput", "skipButton", "submitButton", "nextButton", "feedback",
+        "characterImage", "answerForm", "answerInput", "skipButton", "submitButton", "selfMarkButton", "nextButton", "feedback",
         "score", "streak", "lives", "bestScore", "sourceCount", "filterCount", "recentList", "startButton",
         "resetButton", "difficultyOverlay", "launchStartButton", "gameOverOverlay", "gameOverTitle", "gameOverCopy",
         "gameSummary", "closeOverlayButton", "playAgainButton",
@@ -572,9 +574,12 @@
         els.submitButton.hidden = false;
         els.skipButton.hidden = false;
         els.skipButton.textContent = "跳过";
+        els.selfMarkButton.hidden = true;
+        els.selfMarkButton.disabled = true;
+        state.selfMarkAvailable = false;
         els.nextButton.hidden = true;
         els.imageFrame.classList.add("loading");
-        setFeedback("请输入该字，或输入拼音；拼音可以不标声调。");
+        setFeedback("请输入汉字或拼音；拼音可以不标声调。汉字误判时可自行改正。");
         els.characterImage.onload = () => {
           if (!state.active || token !== state.questionToken) return;
           els.imageFrame.classList.remove("loading");
@@ -609,6 +614,7 @@
         state.history = [];
         state.usedCharacters = new Set();
         state.resolving = false;
+        state.selfMarkAvailable = false;
         hideChooser();
         els.gameOverOverlay.classList.remove("show");
         syncModeControls();
@@ -620,12 +626,15 @@
         state.active = false;
         state.current = null;
         state.resolving = false;
+        state.selfMarkAvailable = false;
         state.seconds = QUESTION_SECONDS;
         els.characterImage.removeAttribute("src");
         els.imageFrame.classList.add("loading");
         els.answerInput.disabled = true;
         els.submitButton.disabled = true;
         els.skipButton.disabled = true;
+        els.selfMarkButton.hidden = true;
+        els.selfMarkButton.disabled = true;
         setFeedback("选择书体后开始 16 题挑战。");
         syncModeControls();
         render();
@@ -649,7 +658,9 @@
         if (!state.active || state.resolving) return;
         stopTimer();
         state.resolving = true;
+        state.selfMarkAvailable = false;
         state.answered += 1;
+        const priorStreak = state.streak;
         if (ok) {
           state.correct += 1;
           state.streak += 1;
@@ -658,14 +669,38 @@
           state.streak = 0;
           state.lives = Math.max(0, state.lives - 1);
         }
-        state.history.push({ entry: state.current, ok, reason, userAnswer });
+        state.history.push({ entry: state.current, ok, reason, userAnswer, priorStreak });
         const answer = markedPinyin(state.current.pinyin);
-        setFeedback(`${reason} — ${state.current.hanzi} 读作 ${answer}（${state.current.pinyin}）。`, ok ? "good" : "bad");
+        const correctionHint = ok ? "" : " 若汉字匹配被误判，可点击“算我答对”。";
+        setFeedback(`${reason} — ${state.current.hanzi} 读作 ${answer}（${state.current.pinyin}）。${correctionHint}`, ok ? "good" : "bad");
         els.answerInput.disabled = true;
         els.submitButton.hidden = true;
         els.skipButton.hidden = true;
+        state.selfMarkAvailable = !ok;
+        els.selfMarkButton.hidden = ok;
+        els.selfMarkButton.disabled = ok;
         els.nextButton.hidden = false;
         els.nextButton.textContent = state.answered >= ROUND_LENGTH || state.lives <= 0 ? "查看结果" : "下一题";
+        els.nextButton.focus();
+        render();
+      }
+
+      function selfMarkCorrect() {
+        if (!state.active || !state.resolving || !state.selfMarkAvailable) return;
+        const result = state.history[state.history.length - 1];
+        if (!result || result.entry !== state.current || result.ok) return;
+        state.selfMarkAvailable = false;
+        state.lives = Math.min(5, state.lives + 1);
+        state.streak = result.priorStreak + 1;
+        state.correct += 1;
+        state.score += 100 + state.seconds * 2 + Math.min(100, result.priorStreak * 20);
+        result.ok = true;
+        result.reason = "自行判为正确";
+        els.selfMarkButton.hidden = true;
+        els.selfMarkButton.disabled = true;
+        els.nextButton.textContent = state.answered >= ROUND_LENGTH ? "查看结果" : "下一题";
+        const answer = markedPinyin(state.current.pinyin);
+        setFeedback(`已改为正确 — ${state.current.hanzi} 读作 ${answer}（${state.current.pinyin}）。`, "good");
         els.nextButton.focus();
         render();
       }
@@ -699,9 +734,12 @@
       function endGame() {
         stopTimer();
         state.active = false;
+        state.selfMarkAvailable = false;
         setBestScore();
         syncModeControls();
         render();
+        els.selfMarkButton.hidden = true;
+        els.selfMarkButton.disabled = true;
         els.skipButton.hidden = false;
         els.skipButton.disabled = false;
         els.skipButton.textContent = "再来一局";
@@ -770,6 +808,7 @@
       els.modeButtons.forEach((button) => button.addEventListener("click", () => selectMode(button.dataset.mode)));
       els.startModeButtons.forEach((button) => button.addEventListener("click", () => selectMode(button.dataset.startMode)));
       els.answerForm.addEventListener("submit", submitAnswer);
+      els.selfMarkButton.addEventListener("click", selfMarkCorrect);
       els.skipButton.addEventListener("click", () => {
         if (!state.active && state.history.length) { restartGame(); return; }
         resolveQuestion(false, "已跳过", "—");
